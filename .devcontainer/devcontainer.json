@@ -4,7 +4,8 @@
 	"runArgs": [
 		"--network=host",
 		"--privileged",
-        "-v", "${localEnv:HOME}${localEnv:USERPROFILE}/.firebase:/home/vscode/.firebase"
+		"-v",
+		"${localEnv:HOME}${localEnv:USERPROFILE}/.firebase:/home/vscode/.firebase"
 	],
 	"customizations": {
 		"vscode": {
@@ -15,7 +16,7 @@
 			"extensions": [
 				"Dart-Code.flutter",
 				"Dart-Code.dart-code",
-                "Firebase.firebase-vscode"
+				"Firebase.firebase-vscode"
 			]
 		}
 	},
@@ -26,6 +27,6 @@
 		// ADB 서버의 기본 포트 5037을 사용합니다.
 		"ANDROID_ADB_SERVER_PORT": "5037"
 	},
-	"postCreateCommand": "sudo curl -sL https://firebase.tools | bash && flutter pub global activate flutterfire_cli && cp pubspecs/legacy.yaml pubspec.yaml",
+	"postCreateCommand": "bash -c \"cp pubspecs/legacy.yaml pubspec.yaml ; sudo curl -sL https://firebase.tools | bash ; flutter pub global activate flutterfire_cli\"",
 	"remoteUser": "vscode"
 }
