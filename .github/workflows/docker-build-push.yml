@@ -4,7 +4,8 @@ name: Build Dev Container
 on:
   push:
     branches: [ "main" ]
-    paths: [ '.devcontainer/Dockerfile' ]
+    paths: 
+      - '.devcontainer/**'
 
 jobs:
   call-reusable-build:
