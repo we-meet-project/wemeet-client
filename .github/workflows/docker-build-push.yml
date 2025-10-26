@@ -10,7 +10,7 @@ on:
 jobs:
   call-reusable-build:
     name: Dokcer Build & Push
-    uses: we-meet-project/CICD-template/.github/workflows/reusable-workflow.yml@main
+    uses: we-meet-project/CICD-template/.github/workflows/docker-build-push.yml@main
     with:
       image-name: 'rlawodms364/we-meet-client'
       image-version: '1.0.0'
