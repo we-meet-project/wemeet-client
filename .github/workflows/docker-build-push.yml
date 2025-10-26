@@ -1,0 +1,19 @@
+# app_1 리포지토리의 .github/workflows/main.yml
+name: Build Dev Container
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ '.devcontainer/Dockerfile' ]
+
+jobs:
+  call-reusable-build:
+    runs-on: ubuntu-22.04
+    secrets: inherit
+
+    steps:
+      - name: Call Reusable Build Workflow
+        uses: we-meet-project/wemeet-watch/.github/workflows/reusable-workflow.yml@main
+        with:
+          image-name: 'rlawodms364/we-meet-client'
+          image-version: '1.0.1'

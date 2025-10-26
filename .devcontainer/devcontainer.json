@@ -1,0 +1,31 @@
+{
+	"name": "Flutter",
+	"image": "rlawodms364/we-meet-client:latest",
+	"runArgs": [
+		"--network=host",
+		"--privileged",
+        "-v", "${localEnv:HOME}${localEnv:USERPROFILE}/.firebase:/home/vscode/.firebase"
+	],
+	"customizations": {
+		"vscode": {
+			"settings": {
+				// FVM이 관리하는 Flutter SDK 경로를 알려줍니다.
+				"dart.flutterSdkPath": "/home/vscode/flutter"
+			},
+			"extensions": [
+				"Dart-Code.flutter",
+				"Dart-Code.dart-code",
+                "Firebase.firebase-vscode"
+			]
+		}
+	},
+	"containerEnv": {
+		// 컨테이너 내 ADB가 호스트의 ADB 서버에 연결하도록 지시
+		"ANDROID_ADB_SERVER_ADDRESS": "host.docker.internal",
+		//"ANDROID_ADB_SERVER_ADDRESS": "127.0.0.1",
+		// ADB 서버의 기본 포트 5037을 사용합니다.
+		"ANDROID_ADB_SERVER_PORT": "5037"
+	},
+	"postCreateCommand": "cp pubspecs/legacy.yaml pubspec.yaml && sudo curl -sL https://firebase.tools | bash && flutter pub global activate flutterfire_cli",
+	"remoteUser": "vscode"
+}

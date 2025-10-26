@@ -1,0 +1,70 @@
+# 1. 베이스 이미지
+FROM ubuntu:22.04
+
+# 2. 고정 인자 설정
+ARG DEBIAN_FRONTEND=noninteractive
+
+# 3. 모든 필수 도구 한 번에 설치 (root)
+RUN apt-get update && apt-get install -y \
+    # 기본 도구
+    curl git unzip xz-utils zip sudo wget \
+    gpg patch rsync \
+    # Android 빌드용 Java
+    openjdk-17-jdk \
+    # Linux 데스크톱 빌드용
+    liblzma-dev \
+    clang cmake ninja-build pkg-config libgtk-3-dev \
+    # Chrome 설치용
+    apt-transport-https && \
+\
+    # --- Google Chrome (Web 빌드용) 설치 ---
+    wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb && \
+    apt-get install -y /tmp/chrome.deb || apt-get -f install -y && \
+    rm /tmp/chrome.deb && \
+\
+    # 최종 캐시 정리
+    rm -rf /var/lib/apt/lists/*
+
+# 4. 'vscode' 사용자 생성 및 sudo 설정 (root)
+ARG USERNAME=vscode
+RUN useradd -m -s /bin/bash -G sudo $USERNAME
+RUN echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME
+
+# 5. 'vscode' 사용자로 전환 ---
+USER ${USERNAME}
+WORKDIR /home/${USERNAME}
+
+# 6. 'vscode' 사용자 환경 변수 설정
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV ANDROID_SDK_ROOT=/home/${USERNAME}/.android-sdk
+ENV FLUTTER_HOME=/home/${USERNAME}/flutter
+
+# Flutter SDK에 포함된 Dart SDK 경로도 함께 추가합니다.
+ENV PATH="/home/${USERNAME}/.pub-cache/bin:${FLUTTER_HOME}/bin:${FLUTTER_HOME}/bin/cache/dart-sdk/bin:${PATH}"
+ENV PATH="${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools"
+
+# 7. Flutter SDK 설치 (직접 설치, 'vscode' 사용자 권한)
+ARG FLUTTER_VERSION=3.22.2
+RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git ${FLUTTER_HOME}
+
+# 8. Android SDK 설치 ('vscode' 사용자 권한)
+ARG CMDLINE_TOOLS_VERSION=11076708
+RUN mkdir -p ${ANDROID_SDK_ROOT} && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_VERSION}_latest.zip -O /tmp/cmdline-tools.zip && \
+    unzip -q /tmp/cmdline-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools && \
+    mv ${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest && \
+    rm /tmp/cmdline-tools.zip
+RUN yes | sdkmanager --licenses
+RUN sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;34.0.0"
+
+# 9. Flutter 환경 설정 (Web, Linux 활성화 및 Doctor)
+RUN flutter config --enable-web
+RUN flutter config --enable-linux-desktop
+RUN flutter precache
+# Doctor를 실행하여 환경 점검
+RUN flutter doctor
+
+# --- 최종 설정 ---
+# WORKDIR을 /workspace로 변경 (VSCode Dev Container의 기본값)
+WORKDIR /workspace
+CMD ["sleep", "infinity"]
