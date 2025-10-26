@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
     paths: 
       - '.devcontainer/**'
+  workflow_dispatch:
 
 jobs:
   call-reusable-build:
