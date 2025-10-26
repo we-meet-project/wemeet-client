@@ -9,13 +9,10 @@ on:
 
 jobs:
   call-reusable-build:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Call Reusable Build Workflow
-        uses: we-meet-project/CICD-template/.github/workflows/reusable-workflow.yml@main
-        with:
-          image-name: 'rlawodms364/we-meet-client'
-          image-version: '1.0.0'
-          dockerfile-path: '.devcontainer/Dockerfile'
-        
-        secrets: inherit
+    name: Dokcer Build & Push
+    uses: we-meet-project/CICD-template/.github/workflows/reusable-workflow.yml@main
+    with:
+      image-name: 'rlawodms364/we-meet-client'
+      image-version: '1.0.0'
+      dockerfile-path: '.devcontainer/Dockerfile'
+    secrets: inherit
