@@ -28,5 +28,6 @@
 		"ANDROID_ADB_SERVER_PORT": "5037"
 	},
 	"postCreateCommand": "bash -c \"cp pubspecs/legacy.yaml pubspec.yaml ; sudo curl -sL https://firebase.tools | bash ; flutter pub global activate flutterfire_cli\"",
+	"postStartCommand": "bash -c \"if [ -f pubspec.yaml ]; then flutter pub get; fi\"",
 	"remoteUser": "vscode"
 }
