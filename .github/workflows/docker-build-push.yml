@@ -1,4 +1,3 @@
-# app_1 리포지토리의 .github/workflows/main.yml
 name: Build Dev Container
 
 on:
@@ -18,3 +17,4 @@ jobs:
         with:
           image-name: 'rlawodms364/we-meet-client'
           image-version: '1.0.0'
+          dockerfile-path: '.devcontainer/Dockerfile'
