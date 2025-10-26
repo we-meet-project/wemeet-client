@@ -1,0 +1,32 @@
+{
+    "files.exclude": {
+        // --- 표준 항목 (위와 동일) ---
+        "**/.git": true,
+        "**/.dart_tool": true,
+        "**/build": true,
+        "**/.packages": true,
+        "**/pubspec.lock": true,
+        "**/*.g.dart": true,
+        "**/*.freezed.dart": true,
+        "**/firebase_options.dart": true,
+
+        // --- [추가] 플랫폼 폴더 전체 숨기기 ---
+        "android": true,
+        "ios": true,
+        "linux": true,
+        "macos": true,
+        "windows": true,
+        "web": true
+    },
+    
+    // search.exclude도 똑같이 추가해 주면 됩니다.
+    "search.exclude": {
+        // ... (표준 항목) ...
+        "android": true,
+        "ios": true,
+        "linux": true,
+        "macos": true,
+        "windows": true,
+        "web": true
+    }
+}
