@@ -10,7 +10,7 @@ on:
 jobs:
   call-reusable-build:
     runs-on: ubuntu-22.04
-    secrets: inherit
+    
 
     steps:
       - name: Call Reusable Build Workflow
@@ -19,3 +19,4 @@ jobs:
           image-name: 'rlawodms364/we-meet-client'
           image-version: '1.0.0'
           dockerfile-path: '.devcontainer/Dockerfile'
+        secrets: inherit
