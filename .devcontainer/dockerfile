@@ -44,8 +44,7 @@ ENV PATH="/home/${USERNAME}/.pub-cache/bin:${FLUTTER_HOME}/bin:${FLUTTER_HOME}/b
 ENV PATH="${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools"
 
 # 7. Flutter SDK 설치 (직접 설치, 'vscode' 사용자 권한)
-ARG FLUTTER_VERSION=3.35.7
-RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git ${FLUTTER_HOME}
+RUN git clone --depth 1 --branch stable https://github.com/flutter/flutter.git ${FLUTTER_HOME}
 
 # 8. Android SDK 설치 ('vscode' 사용자 권한)
 ARG CMDLINE_TOOLS_VERSION=11076708
