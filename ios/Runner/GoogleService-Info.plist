@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>209882233985-f0l4eg2publ2i7046ouq5s26prs0gfgp.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.209882233985-f0l4eg2publ2i7046ouq5s26prs0gfgp</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>209882233985-b9i9kku7lgppvht0vtsk8jr6ch07e5rv.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBv6EaNCyYRaKid2yQraMf1EAh8_5_x1iQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>209882233985</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.wemeetClient</string>
+	<key>PROJECT_ID</key>
+	<string>wemeet-7de9a</string>
+	<key>STORAGE_BUCKET</key>
+	<string>wemeet-7de9a.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:209882233985:ios:5949010938ea6d73476180</string>
+</dict>
+</plist>

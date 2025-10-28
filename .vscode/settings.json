@@ -9,24 +9,5 @@
         "**/*.g.dart": true,
         "**/*.freezed.dart": true,
         "**/firebase_options.dart": true,
-
-        // --- [추가] 플랫폼 폴더 전체 숨기기 ---
-        "android": true,
-        "ios": true,
-        "linux": true,
-        "macos": true,
-        "windows": true,
-        "web": true
     },
-    
-    // search.exclude도 똑같이 추가해 주면 됩니다.
-    "search.exclude": {
-        // ... (표준 항목) ...
-        "android": true,
-        "ios": true,
-        "linux": true,
-        "macos": true,
-        "windows": true,
-        "web": true
-    }
 }
