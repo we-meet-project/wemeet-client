@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart'; // 인증 서비스 임포트
+import 'package:wemeet_client/service/auth_service.dart'; // 인증 서비스 임포트
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

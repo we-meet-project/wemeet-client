@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:health/health.dart';
 
-import '../services/auth_service.dart';
-import '../services/health_service.dart';
-import '../services/firestore_service.dart';
+import 'package:wemeet_client/service/auth_service.dart';
+import 'package:wemeet_client/service/health_service.dart';
+import 'package:wemeet_client/service/firestore_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
