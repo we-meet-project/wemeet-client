@@ -1,18 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:wemeet_client/login.dart';
-import 'firebase_options.dart';
+import 'dart:ffi';
+
+import 'package:flutter/material.dart';//flutter 패키지
+
+//백그라운드 작업
+import 'package:workmanager/workmanager.dart'; //백그라운드 작업 패키지
+import 'package:wemeet_client/Utils/backgorund/backgroundService.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Firebase 초기화
-  await Firebase.initializeApp();
 
   // Workmanager 초기화
-  await Workmanager().initialize(
-    callbackDispatcher,
-    isInDebugMode: true,
-  );
+  Workmanager().initialize(callbackDispatcher);
+  
   runApp(const MyApp());
 }
 
@@ -26,7 +25,6 @@ class MyApp extends StatelessWidget {
           appBar: AppBar(),
           body: Align(
             alignment: Alignment.center,
-            child: LoginScreen(),
           )),
     );
   }
