@@ -2,3 +2,5 @@
 abstract class IWorker {
   Future<bool> run(Map<String, dynamic>? inputData);
 }
+
+
