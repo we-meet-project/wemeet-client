@@ -1,5 +1,5 @@
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wemeet_client/Core/seviceRegister.dart';
+import 'package:wemeet_client/Core/workerPermissionRegister.dart';
 
 class Permissionmanager {
 

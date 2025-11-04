@@ -1,11 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wemeet_client/Core/seviceRegister.dart';
+import 'package:wemeet_client/Service/notification_service.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:wemeet_client/Core/workerPermissionRegister.dart';
 import 'package:wemeet_client/Core/workerRegister.dart';
-import 'package:wemeet_client/Manager/PermissionManager.dart'; //flutter 패키지
+import 'package:wemeet_client/Manager/PermissionManager.dart';
+import 'package:wemeet_client/Manager/workermanager.dart';
+import 'package:wemeet_client/Service/notification_service.dart';
 
-void main() {
+Future<void> main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Workmanager().initialize(callbackDispatcher);
+
+  await NotificationService.inst.initMainIsolate(_onNotificationTap);
+
   runApp(const MyApp());
+}
+
+void _onNotificationTap(NotificationResponse response) {
+  final String? payload = response.payload;
+  if (payload != null && payload.isNotEmpty) {
+    // navigatorKey를 사용하여 화면 이동
+    navigatorKey.currentState?.pushNamed(payload);
+  }
 }
 
 class MyApp extends StatelessWidget {

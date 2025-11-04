@@ -1,4 +1,5 @@
 import 'package:wemeet_client/Service/health_service.dart';
+import 'package:wemeet_client/Service/notification_service.dart';
 
 import 'container.dart';
 
@@ -11,6 +12,8 @@ class DependencyFactory {
       switch (type) {
         case HealthDataService:
         services[type] = HealthDataService.inst;
+        case NotificationService:
+        services[type] = NotificationService.inst;
         default:
           throw Exception('DependencyFactory Error: $type 타입의 서비스를 등록하는 방법을 모릅니다.');
       }

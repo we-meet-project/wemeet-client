@@ -48,5 +48,4 @@ class WorkerManager {
       return false;
     }
   }
-
 }
