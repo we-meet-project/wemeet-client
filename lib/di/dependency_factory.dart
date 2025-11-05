@@ -11,11 +11,13 @@ class DependencyFactory {
     for (var type in types) {
       switch (type) {
         case HealthDataService:
-        services[type] = HealthDataService.inst;
+          services[type] = HealthDataService.inst;
         case NotificationService:
-        services[type] = NotificationService.inst;
+          services[type] = NotificationService.inst;
         default:
-          throw Exception('DependencyFactory Error: $type 타입의 서비스를 등록하는 방법을 모릅니다.');
+          throw Exception(
+            'DependencyFactory Error: $type 타입의 서비스를 등록하는 방법을 모릅니다.',
+          );
       }
     }
 

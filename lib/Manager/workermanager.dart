@@ -1,3 +1,4 @@
+import 'package:wemeet_client/Service/notification_service.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../Worker/worker.dart';
@@ -9,14 +10,14 @@ import '../di/dependency_factory.dart';
 void callbackDispatcher() {
   Workmanager().executeTask((workerName, inputData) async {
     try {
-      //백그라운드 Isolate 전용 DependencyFactory 생성
-      final factory = DependencyFactory();
+      await NotificationService.inst.initBackgroundIsolate();
 
-      //백그라운드 Isolate 전용 TaskManager 인스턴스 생성
+      //백그라운드 Isolate 전용 WorkerManager 생성
+      final factory = DependencyFactory();
       final taskManager = WorkerManager(factory: factory);
 
-      //통합된 실행 로직 호출
-      return await taskManager.executeTask(workerName, inputData,);
+      //Worker 호출
+      return await taskManager.executeTask(workerName, inputData);
     } catch (e) {
       return false;
     }
@@ -29,7 +30,10 @@ class WorkerManager {
 
   WorkerManager({required DependencyFactory factory}) : _factory = factory;
 
-  Future<bool> executeTask(String workerName, Map<String, dynamic>? inputData) async {
+  Future<bool> executeTask(
+    String workerName,
+    Map<String, dynamic>? inputData,
+  ) async {
     Worker? workerFactory = WorkerRegistrar.factories[workerName];
 
     if (workerFactory == null) {
