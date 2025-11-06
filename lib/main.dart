@@ -1,66 +1,63 @@
-//외부 패키지
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:wemeet_client/Screen/detail_screen.dart';
-import 'package:wemeet_client/Screen/home_screen.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-//service, Permission관리자
-import 'package:wemeet_client/Manager/PermissionManager.dart';
-import 'package:wemeet_client/Manager/workermanager.dart';
-import 'package:wemeet_client/di/dependency_factory.dart';
+//import 'ViewModel/home_view_model.dart';
+import 'ViewModel/sleep_view_model.dart';
+import 'Feature/MainScreen/main_screen.dart';
+import 'Feature/ReportScreen/report_screen.dart';
+import 'Feature/Survey/survey_screen.dart';
 
-//Permission, worker등록 register
-
-//Service
-import 'package:wemeet_client/Service/notification_service.dart';
-
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-Future<void> main() async {
+void main() async {
+  // Flutter 바인딩 및 intl 초기화
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Workmanager().initialize(callbackDispatcher);
-
-  await NotificationService.inst.initMainIsolate(_onNotificationTap);
+  await initializeDateFormatting('ko_KR', null);
 
   runApp(
-    MultiProvider(
-      providers: [
-        Provider<DependencyFactory>(create: (_) => DependencyFactory()),
-        Provider<Permissionmanager>(create: (_) => Permissionmanager()),
-      ],
-      child: const MyApp(),
+    ChangeNotifierProvider(
+      create: (context) => SleepViewModel(),
+      child: MyApp(),
     ),
   );
 }
 
-void _onNotificationTap(NotificationResponse response) {
-  final String? payload = response.payload;
-
-  if (payload != null && payload.isNotEmpty) {
-    // navigatorKey를 사용하여 화면 이동
-    navigatorKey.currentState?.pushNamed(payload);
-  }
-}
-
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
+    // 수면 앱에 어울리는 어두운 테마 적용
     return MaterialApp(
-      title: "Test",
-      navigatorKey: navigatorKey,
+      title: '수면 리포트 프로토타입',
+      theme: ThemeData.dark().copyWith(
+        primaryColor: Colors.deepPurpleAccent,
+        scaffoldBackgroundColor: Color(0xFF1A1A2E), // 짙은 남색 배경
+        cardColor: Color(0xFF16213E), // 카드 배경
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xFF1A1A2E),
+          elevation: 0,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepPurpleAccent,
+            foregroundColor: Colors.white,
+          ),
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.deepPurpleAccent,
+          foregroundColor: Colors.white,
+        ),
+        colorScheme: ColorScheme.dark().copyWith(
+          primary: Colors.deepPurpleAccent,
+          secondary: Colors.tealAccent,
+        ),
+      ),
+      debugShowCheckedModeBanner: false,
+
+      // 앱의 메인 화면과 라우트(경로) 설정
       initialRoute: '/',
       routes: {
-        '/': (context) => const HomeScreen(),
-        '/detail': (context) {
-          final String? payload =
-              ModalRoute.of(context)?.settings.arguments as String?;
-          return DetailScreen(payload: payload ?? '전달된 payload없음');
-        },
+        '/': (context) => MainScreen(),
+        '/report': (context) => ReportScreen(),
+        '/survey': (context) => SurveyScreen(),
       },
     );
   }

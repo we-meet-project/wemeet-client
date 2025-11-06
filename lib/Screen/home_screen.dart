@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:wemeet_client/Manager/PermissionManager.dart';
+import 'package:wemeet_client/Core/Manager/PermissionManager.dart';
 import 'package:wemeet_client/ViewModel/home_view_model.dart';
-import 'package:wemeet_client/di/dependency_factory.dart';
+import '../Core/di/dependency_factory.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:wemeet_client/Core/workerPermissionRegister.dart';
-import 'package:wemeet_client/Core/workerRegister.dart';
-import 'package:wemeet_client/Manager/PermissionManager.dart';
-import 'package:wemeet_client/Manager/workermanager.dart';
-import 'package:wemeet_client/di/dependency_factory.dart';
+import 'package:wemeet_client/Core/Core/workerPermissionRegister.dart';
+import 'package:wemeet_client/Core/Core/workerRegister.dart';
+import 'package:wemeet_client/Core/Manager/PermissionManager.dart';
+import 'package:wemeet_client/Core/Manager/workermanager.dart';
+import '../Core/di/dependency_factory.dart';
 
 enum ViewState { idle, loading, success, error }
 

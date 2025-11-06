@@ -1,5 +1,5 @@
-import 'package:wemeet_client/Service/health_service.dart';
-import 'package:wemeet_client/Service/notification_service.dart';
+import '../Service/health_service.dart';
+import '../Service/notification_service.dart';
 
 import 'container.dart';
 

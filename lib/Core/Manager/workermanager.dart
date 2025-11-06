@@ -1,9 +1,9 @@
-import 'package:wemeet_client/Service/notification_service.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../Worker/worker.dart';
 import '../Core/workerRegister.dart';
 import '../di/dependency_factory.dart';
+import '../Service/notification_service.dart';
 
 //백그라운드 작업 등록하는 진입점
 @pragma('vm:entry-point')
@@ -30,14 +30,14 @@ class WorkerManager {
 
   WorkerManager({required DependencyFactory factory}) : _factory = factory;
 
-  Future<bool> executeTask(
+  Future<dynamic> executeTask(
     String workerName,
     Map<String, dynamic>? inputData,
   ) async {
     Worker? workerFactory = WorkerRegistrar.factories[workerName];
 
     if (workerFactory == null) {
-      print("BACKGROUND: '$workerName'에 대해 등록된 팩토리가 없음.");
+      ("BACKGROUND: '$workerName'에 대해 등록된 팩토리가 없음.");
       return false;
     }
 
@@ -45,7 +45,7 @@ class WorkerManager {
       IWorker worker = await workerFactory(_factory);
 
       // 3. Worker를 실행.
-      bool result = await worker.run(inputData);
+      final dynamic result = await worker.run(inputData);
       return result;
     } catch (e) {
       print("BACKGROUND : '$workerName': $e");

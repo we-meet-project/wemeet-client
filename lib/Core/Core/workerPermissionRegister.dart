@@ -1,5 +1,5 @@
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wemeet_client/Core/workerRegister.dart';
+import 'package:wemeet_client/Core/Core/workerRegister.dart';
 
 enum PermissionRequestStatus {
   granted,            // 모든 권한이 완벽히 허용됨

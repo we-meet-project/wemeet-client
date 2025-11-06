@@ -1,7 +1,7 @@
-import 'package:wemeet_client/Service/notification_service.dart';
-import 'package:wemeet_client/Worker/worker.dart';
-import 'package:wemeet_client/di/container.dart';
-import 'package:wemeet_client/di/dependency_factory.dart';
+import 'package:wemeet_client/Core/Service/notification_service.dart';
+import '../Worker/worker.dart';
+import '../di/container.dart';
+import '../di/dependency_factory.dart';
 
 class NotificationWorker implements IWorker {
   final NotificationService _notificationService;
