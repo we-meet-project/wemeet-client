@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:wemeet_client/Feature/ReportScreen/report_view_model.dart';
 
-import '../../ViewModel/sleep_view_model.dart';
+import '../MainScreen/sleep_view_model.dart';
 
 class ReportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // ViewModel의 'currentReport'를 구독(watch)합니다.
-    final report = context.watch<SleepViewModel>().currentReport;
+    final report = context.watch<ReportViewModel>().report;
 
     return Scaffold(
       appBar: AppBar(

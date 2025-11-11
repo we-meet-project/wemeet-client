@@ -1,19 +1,26 @@
-import 'package:uuid/uuid.dart';
+import 'package:isar/isar.dart';
 
-/// 수면 리포트 데이터를 담을 클래스 (Model)
+part 'Sleep_report_model.g.dart';
+@collection
 class SleepReport {
-  final String id;
+  Id id = Isar.autoIncrement;
+  @Index()
   final DateTime date;
-  final double sleepScore; // 0-100점
-  final Duration duration; // 총 수면 시간
-  final int deepSleepPercent; // 깊은 잠 비율
-  final int remSleepPercent; // REM 수면 비율
+
+  final double sleepScore;
+
+  final int durationInMinutes;
+  
+  final int deepSleepPercent;
+  final int remSleepPercent;
+
+  @Ignore()
+  Duration get duration => Duration(minutes: durationInMinutes);
 
   SleepReport({
-    required this.id,
     required this.date,
     required this.sleepScore,
-    required this.duration,
+    required this.durationInMinutes,
     required this.deepSleepPercent,
     required this.remSleepPercent,
   });

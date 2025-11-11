@@ -16,24 +16,7 @@ class MainViewModel extends ChangeNotifier {
 
   // --- Logic ---
   /// report생성
-  Future<void> createReport(
-    DateTime startTime,
-    DateTime endTime,
-    Map<String, dynamic> sleepData,
-  ) async {
-    final Map<String, dynamic> inputData = {
-      'startTime': startTime,
-      'endTime': endTime,
-    };
-    try {
-      SleepReport report = await _manager.executeTask(
-        WorkerName.sleepReport,
-        inputData,
-      );
-
-      notifyListeners();
-    } catch (e) {
-      print('Error creating report: $e');
-    }
+  Future<void> loadReport() async {
+    //나중에 로컬 저장소에서 데이터 가져오는 코드 적어야함
   }
 }

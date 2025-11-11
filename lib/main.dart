@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:wemeet_client/Feature/ReportScreen/report_view_model.dart';
 
 //import 'ViewModel/home_view_model.dart';
-import 'ViewModel/sleep_view_model.dart';
+import 'Feature/MainScreen/sleep_view_model.dart';
 import 'Feature/MainScreen/main_screen.dart';
 import 'Feature/ReportScreen/report_screen.dart';
 import 'Feature/Survey/survey_screen.dart';
@@ -13,12 +15,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ko_KR', null);
 
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => SleepViewModel(),
-      child: MyApp(),
-    ),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -55,9 +52,24 @@ class MyApp extends StatelessWidget {
       // 앱의 메인 화면과 라우트(경로) 설정
       initialRoute: '/',
       routes: {
-        '/': (context) => MainScreen(),
-        '/report': (context) => ReportScreen(),
-        '/survey': (context) => SurveyScreen(),
+        '/': (context) => ChangeNotifierProvider(
+          create: (context) => SleepViewModel(),
+        ),
+      },
+      onGenerateRoute: (settings){
+        if(settings.name == '/report'){
+
+          final SleepReport report = settings.arguments as SleepReport;
+
+          return MaterialPageRoute(
+            builder: (context){
+              return ChangeNotifierProvider(
+                create: (context) => ReportViewModel(report),
+                child: ReportScreen(),
+                );
+            }
+            );
+        }
       },
     );
   }

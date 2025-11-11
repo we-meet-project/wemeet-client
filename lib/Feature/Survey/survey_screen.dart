@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wemeet_client/Feature/Survey/survey_view_model.dart';
 
-import '../../ViewModel/sleep_view_model.dart';
 
 class SurveyScreen extends StatelessWidget {
   // 이모지 목록 (UI에 속하므로 View 파일에 둡니다)
@@ -12,9 +12,9 @@ class SurveyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // watch: UI가 ViewModel의 데이터 변경에 반응해야 할 때
-    final viewModel = context.watch<SleepViewModel>();
+    final viewModel = context.watch<SurveyViewModel>();
     // read: UI가 ViewModel의 함수만 호출하고 데이터 변경에 반응할 필요 없을 때
-    final viewModelRead = context.read<SleepViewModel>();
+    final viewModelRead = context.read<SurveyViewModel>();
 
     return Scaffold(
       appBar: AppBar(

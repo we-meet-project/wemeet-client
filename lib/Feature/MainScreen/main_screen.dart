@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:wemeet_client/ViewModel/sleep_view_model.dart';
+import 'package:wemeet_client/Feature/MainScreen/main_view_model.dart';
 
 class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // ViewModel의 'reports' 리스트를 구독
-    final reports = context.watch<SleepViewModel>().reports;
+    final reports = context.watch<MainViewModel>().reports;
     final DateFormat formatter = DateFormat('yyyy년 MM월 dd일 (E)', 'ko_KR');
 
     return Scaffold(
@@ -51,20 +51,12 @@ class MainScreen extends StatelessWidget {
               ),
               trailing: Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
-                Navigator.pushNamed(context, '/report');
+                Navigator.pushNamed(context, '/report', arguments: report);
               },
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.pushNamed(context, '/report');
-        },
-        icon: Icon(Icons.bedtime_outlined),
-        label: Text('수면 측정 (시뮬레이션)'),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

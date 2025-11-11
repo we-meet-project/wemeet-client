@@ -67,7 +67,7 @@ class HealthWorker implements IWorker {
 
           final duration = point.dateTo.difference(point.dateFrom);
 
-          switch (point.dateFrom) {
+          switch (point.type) {
             case HealthDataType.SLEEP_DEEP:
               deepSleepDuration += duration;
               break;
