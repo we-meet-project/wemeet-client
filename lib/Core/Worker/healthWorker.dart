@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:health/health.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:wemeet_client/Model/Sleep_report_model.dart';
 import '../Worker/worker.dart';
@@ -36,7 +35,7 @@ class HealthWorker implements IWorker {
       // final now = inputData?['startTime'] as DateTime.now();
       // final yesterDay = now.subtract(const Duration(days: 1));
 
-      bool hasPerm = await requestHealthPermission(_types);
+      bool hasPerm = await checkHealthPermission(_types);
 
       if (hasPerm) {
         //데이터 가져오기
@@ -61,7 +60,7 @@ class HealthWorker implements IWorker {
         for (var point in data) {
           //가장 이른 시작 시간을 수면 세션의 시작 시간으로 간주
           if (sessionStartTime == null ||
-              point.dateFrom.isBefore(sessionStartTime!)) {
+              point.dateFrom.isBefore(sessionStartTime)) {
             sessionStartTime = point.dateFrom;
           }
 
@@ -110,7 +109,6 @@ class HealthWorker implements IWorker {
         );
 
         final report = SleepReport(
-          id: const Uuid().v4(),
           date: sessionStartTime ?? startTime,
           sleepScore: finalSleepScore,
           duration: totalSleepDuration,

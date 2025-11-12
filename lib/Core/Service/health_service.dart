@@ -6,11 +6,20 @@ Future<bool> requestHealthPermission(List<HealthDataType> type) async {
   final Health health = Health();
   return await health.requestAuthorization(type);
 }
+
+Future<bool> checkHealthPermission(List<HealthDataType> type) async {
+  final Health health = Health();
+
+  bool? hasPermission = await health.hasPermissions(type);
+
+  return hasPermission ?? false;
+}
+
 //권한 실패 예외 클래스
 class HealthPermissionExpection implements Exception {}
 
 class HealthDataService {
-  HealthDataService._(){ 
+  HealthDataService._() {
     print("Health_Service initialize");
   }
   static final inst = HealthDataService._();
@@ -22,22 +31,22 @@ class HealthDataService {
     required DateTime startTime,
     required DateTime endTime,
     required List<HealthDataType> type,
-  }) async{
-
+  }) async {
     List<HealthDataPoint> sleepData = [];
 
-    try{
+    try {
       //google Health Connect로부터 Data가져오기
       sleepData = await _health.getHealthDataFromTypes(
-        types: type, startTime: startTime, endTime: endTime,
-        );
+        types: type,
+        startTime: startTime,
+        endTime: endTime,
+      );
 
       //중복 데이터 제거
       sleepData = _health.removeDuplicates(sleepData);
       //데이터 정렬
       sleepData.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
-    }
-    catch(e){
+    } catch (e) {
       print("수면데이터 불러오기 실패 : $e");
     }
     return sleepData;

@@ -5,10 +5,10 @@ import 'package:wemeet_client/Core/di/dependency_factory.dart';
 import 'package:wemeet_client/Model/Sleep_report_model.dart';
 
 class MainViewModel extends ChangeNotifier {
-  final WorkerManager _manager;
+  // final WorkerManager _manager;
 
-  MainViewModel({required DependencyFactory factory})
-    : _manager = WorkerManager(factory: factory);
+  // MainViewModel({required DependencyFactory factory})
+  //   : _manager = WorkerManager(factory: factory);
 
   // --- State ---
   final List<SleepReport> _reports = [];
