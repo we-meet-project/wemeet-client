@@ -1,16 +1,18 @@
 import 'package:isar/isar.dart';
 
 part 'Sleep_report_model.g.dart';
+
 @collection
 class SleepReport {
   Id id = Isar.autoIncrement;
   @Index()
   final DateTime date;
 
-  final double sleepScore;
+  @Index()
+  bool isSent;
 
+  final double sleepScore;
   final int durationInMinutes;
-  
   final int deepSleepPercent;
   final int remSleepPercent;
 
@@ -23,5 +25,15 @@ class SleepReport {
     required this.durationInMinutes,
     required this.deepSleepPercent,
     required this.remSleepPercent,
+    this.isSent = false,
   });
+
+  Map<String, dynamic> toJson() => {
+    'date': date,
+    'sleepScore': sleepScore,
+    // 민감 데이터임 ㅇㅇ..
+    // 'durationInMinutes': durationInMinutes,
+    // 'deepSleepPercent': deepSleepPercent,
+    // 'remSleepPercent': remSleepPercent,
+  };
 }

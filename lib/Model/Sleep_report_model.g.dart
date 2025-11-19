@@ -32,13 +32,18 @@ const SleepReportSchema = CollectionSchema(
       name: r'durationInMinutes',
       type: IsarType.long,
     ),
-    r'remSleepPercent': PropertySchema(
+    r'isSent': PropertySchema(
       id: 3,
+      name: r'isSent',
+      type: IsarType.bool,
+    ),
+    r'remSleepPercent': PropertySchema(
+      id: 4,
       name: r'remSleepPercent',
       type: IsarType.long,
     ),
     r'sleepScore': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'sleepScore',
       type: IsarType.double,
     )
@@ -57,6 +62,19 @@ const SleepReportSchema = CollectionSchema(
       properties: [
         IndexPropertySchema(
           name: r'date',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'isSent': IndexSchema(
+      id: 1331618202571566622,
+      name: r'isSent',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'isSent',
           type: IndexType.value,
           caseSensitive: false,
         )
@@ -89,8 +107,9 @@ void _sleepReportSerialize(
   writer.writeDateTime(offsets[0], object.date);
   writer.writeLong(offsets[1], object.deepSleepPercent);
   writer.writeLong(offsets[2], object.durationInMinutes);
-  writer.writeLong(offsets[3], object.remSleepPercent);
-  writer.writeDouble(offsets[4], object.sleepScore);
+  writer.writeBool(offsets[3], object.isSent);
+  writer.writeLong(offsets[4], object.remSleepPercent);
+  writer.writeDouble(offsets[5], object.sleepScore);
 }
 
 SleepReport _sleepReportDeserialize(
@@ -103,8 +122,9 @@ SleepReport _sleepReportDeserialize(
     date: reader.readDateTime(offsets[0]),
     deepSleepPercent: reader.readLong(offsets[1]),
     durationInMinutes: reader.readLong(offsets[2]),
-    remSleepPercent: reader.readLong(offsets[3]),
-    sleepScore: reader.readDouble(offsets[4]),
+    isSent: reader.readBoolOrNull(offsets[3]) ?? false,
+    remSleepPercent: reader.readLong(offsets[4]),
+    sleepScore: reader.readDouble(offsets[5]),
   );
   object.id = id;
   return object;
@@ -124,8 +144,10 @@ P _sleepReportDeserializeProp<P>(
     case 2:
       return (reader.readLong(offset)) as P;
     case 3:
-      return (reader.readLong(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 4:
+      return (reader.readLong(offset)) as P;
+    case 5:
       return (reader.readDouble(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -157,6 +179,14 @@ extension SleepReportQueryWhereSort
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         const IndexWhereClause.any(indexName: r'date'),
+      );
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterWhere> anyIsSent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'isSent'),
       );
     });
   }
@@ -317,6 +347,51 @@ extension SleepReportQueryWhere
         upper: [upperDate],
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterWhereClause> isSentEqualTo(
+      bool isSent) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'isSent',
+        value: [isSent],
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterWhereClause> isSentNotEqualTo(
+      bool isSent) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isSent',
+              lower: [],
+              upper: [isSent],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isSent',
+              lower: [isSent],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isSent',
+              lower: [isSent],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isSent',
+              lower: [],
+              upper: [isSent],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }
@@ -541,6 +616,16 @@ extension SleepReportQueryFilter
     });
   }
 
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition> isSentEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isSent',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
       remSleepPercentEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
@@ -712,6 +797,18 @@ extension SleepReportQuerySortBy
     });
   }
 
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByIsSent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByIsSentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSent', Sort.desc);
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByRemSleepPercent() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'remSleepPercent', Sort.asc);
@@ -792,6 +889,18 @@ extension SleepReportQuerySortThenBy
     });
   }
 
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByIsSent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByIsSentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSent', Sort.desc);
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByRemSleepPercent() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'remSleepPercent', Sort.asc);
@@ -840,6 +949,12 @@ extension SleepReportQueryWhereDistinct
     });
   }
 
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByIsSent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isSent');
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QDistinct>
       distinctByRemSleepPercent() {
     return QueryBuilder.apply(this, (query) {
@@ -877,6 +992,12 @@ extension SleepReportQueryProperty
   QueryBuilder<SleepReport, int, QQueryOperations> durationInMinutesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'durationInMinutes');
+    });
+  }
+
+  QueryBuilder<SleepReport, bool, QQueryOperations> isSentProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isSent');
     });
   }
 

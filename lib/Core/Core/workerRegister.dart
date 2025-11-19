@@ -1,12 +1,12 @@
 import '../di/dependency_factory.dart';
 import '../Worker/worker.dart';
-import '../Worker/healthWorker.dart';
+import '../Worker/reportWorker.dart';
 import '../Worker/notificationWorker.dart';
 
 /// WorkerName(String)과 WorkerFactory(Function)를 맵핑하는 정적 클래스
 class WorkerRegistrar {
   static final Map<String, Worker> factories = {
-    WorkerName.sleepReport: createHealthWorker,
+    WorkerName.sleepReport: createReporthWorker,
     WorkerName.notification: createNotificationWorker,
   };
 }

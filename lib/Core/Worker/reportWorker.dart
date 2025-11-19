@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:health/health.dart';
+import 'package:wemeet_client/Core/Service/notification_service.dart';
+import 'package:wemeet_client/Core/Service/repository_service.dart';
 
 import 'package:wemeet_client/Model/Sleep_report_model.dart';
 import '../Worker/worker.dart';
@@ -8,11 +10,15 @@ import '../Service/health_service.dart';
 import '../di/dependency_factory.dart';
 import '../di/container.dart';
 
-class HealthWorker implements IWorker {
+class ReportWorker implements IWorker {
   final HealthDataService _healthService;
+  final RepositoryService _repositoryService;
+  final NotificationService _notificationService;
 
-  HealthWorker({required Container container})
-    : _healthService = container.get<HealthDataService>();
+  ReportWorker({required Container container})
+    : _healthService = container.get<HealthDataService>(),
+      _repositoryService = container.get<RepositoryService>(),
+      _notificationService = container.get<NotificationService>();
 
   //가져올 데이터 타입
   static final _types = [
@@ -23,20 +29,13 @@ class HealthWorker implements IWorker {
     HealthDataType.SLEEP_REM, // REM 수면
   ];
 
-  @override
-  Future<SleepReport?> run(Map<String, dynamic>? inputData) async {
+  //Googel Health Connect를 통해 데이터 가져오기
+  Future<SleepReport?> createReport(
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
+    bool hasPerm = await checkHealthPermission(_types);
     try {
-      //시간범위 설정(24시간)
-      final startTime =
-          (inputData?['startTime'] as DateTime?) ??
-          DateTime.now().subtract(const Duration(days: 1));
-      final endTime = (inputData?['endTime'] as DateTime?) ?? DateTime.now();
-
-      // final now = inputData?['startTime'] as DateTime.now();
-      // final yesterDay = now.subtract(const Duration(days: 1));
-
-      bool hasPerm = await checkHealthPermission(_types);
-
       if (hasPerm) {
         //데이터 가져오기
         List<HealthDataPoint> data = await _healthService.getSleepData(
@@ -111,18 +110,19 @@ class HealthWorker implements IWorker {
         final report = SleepReport(
           date: sessionStartTime ?? startTime,
           sleepScore: finalSleepScore,
-          duration: totalSleepDuration,
+          durationInMinutes: totalSleepDuration.inMinutes,
           deepSleepPercent: deepPercent,
           remSleepPercent: remPercent,
         );
-
         return report;
-      } else {
+      } //hasPerm
+      else {
         throw HealthPermissionExpection();
-      }
-    } catch (e) {
+      } //else
+    } //try
+    catch (e) {
       return null;
-    }
+    } //catch
   }
 
   //임시
@@ -173,12 +173,76 @@ class HealthWorker implements IWorker {
     // 최종 점수는 0점에서 100점 사이로 제한
     return (durationScore + deepScore + remScore).clamp(0.0, 100.0);
   }
+
+  @override
+  Future<bool> run(Map<String, dynamic>? inputData) async {
+    final bool isPeriodic = inputData?['isPeriodic'] as bool? ?? false;
+
+    final DateTime targetDate; // report기준일
+    final DateTime startTime; // 데이터 조회 시작
+    final DateTime endTime; // 데이터 조회 끝
+
+    if (isPeriodic) {
+      final now = DateTime.now(); // 8:00 AM
+      final yesterday = now.subtract(const Duration(days: 1));
+
+      targetDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
+
+      startTime = DateTime(
+        yesterday.year,
+        yesterday.month,
+        yesterday.day,
+        12,
+        0,
+        0,
+      );
+      endTime = DateTime(now.year, now.month, now.day, 11, 59, 59);
+    } else {
+      startTime =
+          (inputData?['startTime'] as DateTime?) ??
+          DateTime.now().subtract(const Duration(days: 1));
+      endTime = (inputData?['endTime'] as DateTime?) ?? DateTime.now();
+
+      targetDate = DateTime(startTime.year, startTime.month, startTime.day);
+    }
+
+    try {
+      //DB 중복확인
+      if (await _repositoryService.getReportForDate(targetDate) != null)
+        return true;
+
+      SleepReport? report = await createReport(startTime, endTime);
+
+      //데이터 없거나, 권한 이슈 처리
+      if (report == null) {
+        print('HealthWorker: 생성할 리포트가 없습니다 (데이터 없음 등).');
+        return true;
+      }
+
+      //로컬 DB에 저장
+      await _repositoryService.saveData(report);
+
+      //백그라운드 호출일경우 알람 전송
+      if (isPeriodic) {
+        await _notificationService.showNotification(
+          id: report.date.hashCode,
+          title: '수면 리포트가 도착했어요! 😴',
+          body: '어젯밤 수면 리포트를 탭해서 확인하세요!',
+          payload: report.id.toString(),
+        );
+      }
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
-Future<IWorker> createHealthWorker(DependencyFactory factory) async {
-  final types = [HealthDataService];
+Future<IWorker> createReporthWorker(DependencyFactory factory) async {
+  final types = [HealthDataService, RepositoryService, NotificationService];
 
   final container = factory.createContainer(types);
 
-  return HealthWorker(container: container);
+  return ReportWorker(container: container);
 }

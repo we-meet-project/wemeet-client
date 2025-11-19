@@ -1,9 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:wemeet_client/Feature/MainScreen/main_view_model.dart';
 import 'package:wemeet_client/Model/Sleep_report_model.dart';
 import 'package:wemeet_client/Feature/ReportScreen/report_view_model.dart';
+import 'package:wemeet_client/firebase_options.dart';
 
 import 'Feature/MainScreen/main_screen.dart';
 import 'Feature/ReportScreen/report_screen.dart';
@@ -12,6 +14,8 @@ import 'Feature/Survey/survey_screen.dart';
 void main() async {
   // Flutter 바인딩 및 intl 초기화
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('ko_KR', null);
 
   runApp(MyApp());
