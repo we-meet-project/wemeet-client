@@ -4,12 +4,8 @@ import 'package:wemeet_client/Core/Service/database_service.dart';
 import 'package:wemeet_client/Core/Service/localprofile_service.dart';
 import 'package:wemeet_client/Core/Worker/worker.dart';
 import 'package:wemeet_client/Core/di/container.dart';
-
-enum AuthStatus {
-  loggedIn, // 로그인 성공 -> 홈 화면으로
-  notAllowed, // 허용 목록에 없음 -> 에러 메시지
-  error, // 기타 실패
-}
+import 'package:wemeet_client/Core/di/dependency_factory.dart';
+import 'package:wemeet_client/Core/enums.dart';
 
 class Authworker implements IWorker {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -24,16 +20,21 @@ class Authworker implements IWorker {
 
   Future<User?> _PerformGoogleSignIn() async {
     try {
+      print("  -> GoogleSignIn.signIn() 호출");
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null; // 사용자가 로그인 취소
 
+      print("  -> Google Auth Token 요청 중...");
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
+
+      print("  -> Credential 생성 중...");
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
+      print("  -> Firebase signInWithCredential 호출...");
       final UserCredential userCredential = await _auth.signInWithCredential(
         credential,
       );
@@ -53,16 +54,20 @@ class Authworker implements IWorker {
   @override
   Future<AuthStatus> run(Map<String, dynamic>? inputData) async {
     final User? user = await _PerformGoogleSignIn();
-
+    print("--- [Step 1] 구글 로그인 시작 ---");
     // 사용자가 팝업을 닫음, 이메일 없음
     if (user == null || user.email == null) return AuthStatus.error;
 
+    print("--- [Step 2] 구글 인증 성공 / 이메일: ${user.email} ---");
+    print("--- [Step 3] DB에서 허용 목록 조회 시도 ---");
+
     final String email = user.email!;
-    final String emailKey = email.replaceAll('.', ',');
 
     final String? groupId = await _dataBaseService.getGroupIdFromAllowList(
-      emailKey,
+      email,
     );
+
+    print("--- [Step 4] DB 조회 결과: $groupId ---");
 
     if (groupId == null) {
       print("AuthService: 허용되지 않은 이메일입니다. $email");
@@ -74,7 +79,7 @@ class Authworker implements IWorker {
     print("AuthService: 허용된 사용자입니다. Group: $groupId");
 
     // 4. RTDB의 /users/ 에 프로필 저장 (신규/기존 상관없이 덮어쓰기)
-    await _dataBaseService.saveUserProfile(user.uid, email, groupId);
+    await _dataBaseService.saveUserProfile(user.uid, groupId);
 
     // 5. 로컬(SharedPreferences)에 저장
     await _localprofileService.saveUserProfile(
@@ -85,4 +90,11 @@ class Authworker implements IWorker {
 
     return AuthStatus.loggedIn; // 홈 화면으로
   }
+}
+
+Future<IWorker> createAuthWorker(DependencyFactory factory) async{
+  final types = [DataBaseService, LocalprofileService];
+
+  final container = factory.createContainer(types);
+  return Authworker(container: container);
 }

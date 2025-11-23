@@ -5,25 +5,6 @@ import '../Core/workerRegister.dart';
 import '../di/dependency_factory.dart';
 import '../Service/notification_service.dart';
 
-//백그라운드 작업 등록하는 진입점
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((workerName, inputData) async {
-    try {
-      await NotificationService.inst.initBackgroundIsolate();
-
-      //백그라운드 Isolate 전용 WorkerManager 생성
-      final factory = DependencyFactory();
-      final taskManager = WorkerManager(factory: factory);
-
-      //Worker 호출
-      return await taskManager.executeTask(workerName, inputData);
-    } catch (e) {
-      return false;
-    }
-  });
-}
-
 //작업을 실행하는 worker을 관리하는 매니저
 class WorkerManager {
   final DependencyFactory _factory;
@@ -37,7 +18,7 @@ class WorkerManager {
     Worker? workerFactory = WorkerRegistrar.factories[workerName];
 
     if (workerFactory == null) {
-      ("BACKGROUND: '$workerName'에 대해 등록된 팩토리가 없음.");
+      ("'$workerName'에 대해 등록된 팩토리가 없음.");
       return false;
     }
 
@@ -48,7 +29,7 @@ class WorkerManager {
       final dynamic result = await worker.run(inputData);
       return result;
     } catch (e) {
-      print("BACKGROUND : '$workerName': $e");
+      print("'$workerName': $e");
       return false;
     }
   }

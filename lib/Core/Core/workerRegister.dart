@@ -1,3 +1,5 @@
+import 'package:wemeet_client/Core/Worker/authWorker.dart';
+
 import '../di/dependency_factory.dart';
 import '../Worker/worker.dart';
 import '../Worker/reportWorker.dart';
@@ -8,6 +10,7 @@ class WorkerRegistrar {
   static final Map<String, Worker> factories = {
     WorkerName.sleepReport: createReporthWorker,
     WorkerName.notification: createNotificationWorker,
+    WorkerName.authentication: createAuthWorker,
   };
 }
 
@@ -15,6 +18,7 @@ class WorkerRegistrar {
 class WorkerName {
   static const sleepReport = "SleepReport";
   static const notification = "Notification";
+  static const authentication = "Authentication";
 }
 
 //Worker 생성 팩토리 함수 type

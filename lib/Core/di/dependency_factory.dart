@@ -1,3 +1,5 @@
+import 'package:wemeet_client/Core/Service/database_service.dart';
+import 'package:wemeet_client/Core/Service/localprofile_service.dart';
 import 'package:wemeet_client/Core/Service/repository_service.dart';
 
 import '../Service/health_service.dart';
@@ -18,6 +20,10 @@ class DependencyFactory {
           services[type] = NotificationService.inst;
         case RepositoryService:
           services[type] = RepositoryService.inst;
+        case DataBaseService:
+          services[type] = DataBaseService.inst;
+        case LocalprofileService:
+          services[type] = LocalprofileService.inst;
         default:
           throw Exception(
             'DependencyFactory Error: $type 타입의 서비스를 등록하는 방법을 모릅니다.',

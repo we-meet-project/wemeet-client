@@ -1,15 +1,47 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:wemeet_client/Core/Core/taskScheduler.dart';
+import 'package:wemeet_client/Feature/Login/Login_screen.dart';
+import 'package:wemeet_client/Feature/Login/Login_viewModel.dart';
+import 'package:wemeet_client/Feature/MainScreen/main_screen.dart';
 import 'package:wemeet_client/Feature/MainScreen/main_view_model.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
-import 'package:wemeet_client/Feature/ReportScreen/report_view_model.dart';
+import 'package:workmanager/workmanager.dart';
 import 'package:wemeet_client/firebase_options.dart';
 
-import 'Feature/MainScreen/main_screen.dart';
-import 'Feature/ReportScreen/report_screen.dart';
-import 'Feature/Survey/survey_screen.dart';
+import 'package:wemeet_client/Core/Manager/workermanager.dart';
+import 'package:wemeet_client/Core/di/dependency_factory.dart';
+import 'package:wemeet_client/Core/Service/repository_service.dart';
+import 'package:wemeet_client/Core/Service/notification_service.dart';
+import 'package:wemeet_client/Core/Service/localprofile_service.dart';
+
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((workerName, inputData) async {
+    try {
+      //백드라운드 환경 초기화
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await RepositoryService.inst.init(); // Isar DB
+      await NotificationService.inst.initBackgroundIsolate(); // 알림
+      await LocalprofileService.inst.init(); // SharedPreferences
+
+      //백그라운드 Isolate 전용 WorkerManager 생성
+      final factory = DependencyFactory();
+      final taskManager = WorkerManager(factory: factory);
+
+      //Worker 호출
+      return await taskManager.executeTask(workerName, inputData);
+    } catch (e) {
+      return false;
+    }
+  });
+}
+
+
 
 void main() async {
   // Flutter 바인딩 및 intl 초기화
@@ -18,16 +50,58 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('ko_KR', null);
 
-  runApp(MyApp());
+  //서비스 객체 초기화
+  await RepositoryService.inst.init();
+  await LocalprofileService.inst.init();
+
+  //알람클릭 핸들러
+  void onNotificationTap(NotificationResponse response){
+    print("test alarm");
+  }
+
+  await NotificationService.inst.initMainIsolate(onNotificationTap);
+
+  //workManager 객체 초기화
+  await Workmanager().initialize(callbackDispatcher);
+
+  Taskscheduler.scheduleAllTask();
+
+  final isLoggedIn = LocalprofileService.inst.getUserId() != null;
+
+  final dependencyFactory = DependencyFactory();
+  
+  runApp(MyApp(
+    factory : dependencyFactory,
+    initialRoute: isLoggedIn ? '/home' : '/login',
+  ));
 }
 
+
+
 class MyApp extends StatelessWidget {
+
+  final DependencyFactory factory;
+  final String initialRoute;
+
+  const MyApp({
+    super.key,
+    required this.factory,
+    required this. initialRoute
+  });
+
   @override
   Widget build(BuildContext context) {
-    // 수면 앱에 어울리는 어두운 테마 적용
-    return MaterialApp(
-      title: '수면 리포트 프로토타입',
-      theme: ThemeData.dark().copyWith(
+    return MultiProvider(
+      providers: [
+        //WorkerManager
+        Provider<WorkerManager>(
+          create: (_) => WorkerManager(factory: factory),
+          ),
+      ],
+
+      child: MaterialApp(
+        title: '수면 리포트 프로토타입',
+        theme: ThemeData.dark().copyWith(
         primaryColor: Colors.deepPurpleAccent,
         scaffoldBackgroundColor: Color(0xFF1A1A2E), // 짙은 남색 배경
         cardColor: Color(0xFF16213E), // 카드 배경
@@ -52,26 +126,22 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
 
-      // 앱의 메인 화면과 라우트(경로) 설정
-      initialRoute: '/',
-      routes: {
-        '/': (context) =>
-            ChangeNotifierProvider(create: (context) => MainViewModel()),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/report') {
-          final SleepReport report = settings.arguments as SleepReport;
+      // 경로 설정
+      initialRoute: initialRoute,
 
-          return MaterialPageRoute(
-            builder: (context) {
-              return ChangeNotifierProvider(
-                create: (context) => ReportViewModel(report),
-                child: ReportScreen(),
-              );
-            },
-          );
-        }
+      routes: {
+        '/login' : (context) => ChangeNotifierProvider(
+          create: (context) => LoginViewmodel(workermanager: context.read<WorkerManager>(),),
+          child: const LoginScreen(),
+        ),
+        '/home': (context) => ChangeNotifierProvider(
+            create: (context) => MainViewModel(),
+            child: MainScreen(),
+          ),
       },
+      
+      
+      )
     );
   }
 }
