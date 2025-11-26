@@ -1,131 +1,183 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:wemeet_client/Feature/ReportScreen/report_view_model.dart';
-
-import '../MainScreen/sleep_view_model.dart';
+// (ReportViewModel import)
 
 class ReportScreen extends StatelessWidget {
+  const ReportScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    // ViewModel의 'currentReport'를 구독(watch)합니다.
-    final report = context.watch<ReportViewModel>().report;
+    // 배경색
+    const backgroundColor = Color(0xFF1A1A2E);
+    const cardColor = Color(0xFF24243E);
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text('오늘의 수면 리포트'),
-        leading: IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: const Text("수면 상세 리포트"),
+        backgroundColor: backgroundColor,
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              DateFormat('M월 d일 (E)', 'ko_KR').format(report.date),
-              style: TextStyle(fontSize: 18, color: Colors.grey[400]),
-            ),
-            SizedBox(height: 8),
-            Text(
-              '훌륭한 수면이었어요! 💤', // Mock 피드백
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 32),
+      body: Consumer<ReportViewModel>(
+        builder: (context, vm, child) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                // 1. 날짜 헤더
+                Text(
+                  vm.formattedDate,
+                  style: const TextStyle(color: Colors.white54, fontSize: 16),
+                ),
+                const SizedBox(height: 30),
 
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    '수면 점수',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[400]),
-                  ),
-                  Text(
-                    report.sleepScore.toInt().toString(),
-                    style: TextStyle(
-                      fontSize: 90,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepPurpleAccent,
+                // 2. 점수 원형 차트 (커스텀 페인터 대신 간단히 Container 사용 예시)
+                Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: vm.scoreColor.withOpacity(0.2),
+                      width: 20,
                     ),
                   ),
-                ],
-              ),
-            ),
-            SizedBox(height: 40),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildDataInfo(
-                  '총 수면',
-                  '${report.duration.inHours}h ${report.duration.inMinutes % 60}m',
-                ),
-                _buildDataInfo('깊은 잠', '${report.deepSleepPercent}%'),
-                _buildDataInfo('REM 수면', '${report.remSleepPercent}%'),
-              ],
-            ),
-            SizedBox(height: 40),
-
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                color: Color(0xFF16213E),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  '[ 수면 단계 그래프 영역 ]',
-                  style: TextStyle(color: Colors.grey[500]),
-                ),
-              ),
-            ),
-            SizedBox(height: 40),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "${vm.score}",
+                          style: TextStyle(
+                            fontSize: 60,
+                            fontWeight: FontWeight.bold,
+                            color: vm.scoreColor,
+                          ),
+                        ),
+                        const Text(
+                          "점",
+                          style: TextStyle(color: Colors.white54, fontSize: 20),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/survey');
-                },
-                child: Text(
-                  '기상 컨디션 기록하기',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 20),
+
+                // 3. 상태 메시지
+                Text(
+                  vm.scoreMessage,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 40),
+
+                // 4. 상세 데이터 그리드 (총 수면, 깊은 잠, REM 등)
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.5,
+                  children: [
+                    _buildDetailCard(
+                      "총 수면 시간",
+                      vm.sleepDuration,
+                      Icons.access_time,
+                      cardColor,
+                    ),
+                    _buildDetailCard(
+                      "깊은 수면",
+                      "${vm.report.deepSleepPercent}%",
+                      Icons.bedtime,
+                      cardColor,
+                    ),
+                    _buildDetailCard(
+                      "REM 수면",
+                      "${vm.report.remSleepPercent}%",
+                      Icons.psychology,
+                      cardColor,
+                    ),
+                    // Light 수면 등 추가 가능
+                    // _buildDetailCard("얕은 수면", "${100 - deep - rem}%", Icons.light_mode, cardColor),
+                  ],
+                ),
+
+                const SizedBox(height: 40),
+
+                // 5. 조언 카드
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurpleAccent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.lightbulb,
+                        color: Colors.amber,
+                        size: 30,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          "규칙적인 수면 습관이 수면 점수를 높이는 가장 좋은 방법입니다.",
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  /// 세부 데이터 표시용 헬퍼 위젯
-  Widget _buildDataInfo(String title, String value) {
-    return Column(
-      children: [
-        Text(title, style: TextStyle(fontSize: 16, color: Colors.grey[400])),
-        SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+  Widget _buildDetailCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white54, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 14, color: Colors.white38),
+          ),
+        ],
+      ),
     );
   }
 }

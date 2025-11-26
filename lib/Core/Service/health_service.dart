@@ -1,23 +1,6 @@
 //google health connect에서 수면데이터 얻어오는 service
 import 'package:health/health.dart';
 
-//Google 엑세스 요청 메서드
-Future<bool> requestHealthPermission(List<HealthDataType> type) async {
-  final Health health = Health();
-  return await health.requestAuthorization(type);
-}
-
-Future<bool> checkHealthPermission(List<HealthDataType> type) async {
-  final Health health = Health();
-
-  bool? hasPermission = await health.hasPermissions(type);
-
-  return hasPermission ?? false;
-}
-
-//권한 실패 예외 클래스
-class HealthPermissionExpection implements Exception {}
-
 class HealthDataService {
   HealthDataService._() {
     print("Health_Service initialize");

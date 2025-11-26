@@ -1,8 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wemeet_client/Core/Service/localprofile_service.dart';
 import 'package:wemeet_client/Core/Service/repository_service.dart';
 import 'package:wemeet_client/Core/Service/database_service.dart';
 import 'package:wemeet_client/Core/Worker/worker.dart';
+import 'package:wemeet_client/Core/di/dependency_factory.dart';
 import 'package:wemeet_client/Model/Sleep_report_model.dart';
 import '../di/container.dart';
 
@@ -19,29 +19,45 @@ class Syncworker implements IWorker {
   @override
   Future<bool> run(Map<String, dynamic>? inputData) async {
     try {
-      final String? userId = FirebaseAuth.instance.currentUser?.uid;
-      final String? groupId = await _profileService.getUserGroup();
+      // 1. 사용자 정보 확인
+      final String? userId = _profileService.getUserId();
+      final String? groupId = _profileService.getUserGroup();
 
       if (userId == null || groupId == null) {
-        print('ServerSendWorker: 로그인 정보/그룹 ID가 없어 스킵 (재시도 필요)');
-        return false;
+        return true; // 재시도 방지를 위해 true 리턴 (로그인해야 가능하므로)
       }
 
-      final List<SleepReport> reports = await _repositoryService
+      // 2. 전송할 데이터 확인
+      final List<SleepReport> unsentReports = await _repositoryService
           .getUnsentReports();
-      if (reports.isEmpty) return true;
 
-      await _syncService.sendSleepScoreToGroup(
-        reports: reports,
+      if (unsentReports.isEmpty) {
+        return true;
+      }
+
+      // 3. 전송 시도
+      print("cloud_upload 전송 시작...");
+      await _syncService.sendSleepScoresToGroup(
+        reports: unsentReports,
         userId: userId,
         groupId: groupId,
       );
 
-      await _repositoryService.markReportAsSent(reports);
+      // 4. 로컬 DB 업데이트
+      await _repositoryService.markReportAsSent(unsentReports);
 
       return true;
     } catch (e) {
+      print('ServerSend: $e');
       return false;
     }
   }
+}
+
+Future<IWorker> createSyncWorker(DependencyFactory factory) async {
+  final types = [DataBaseService, RepositoryService, LocalprofileService];
+
+  final container = factory.createContainer(types);
+
+  return Syncworker(container: container);
 }

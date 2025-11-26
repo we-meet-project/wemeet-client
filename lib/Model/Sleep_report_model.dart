@@ -27,13 +27,4 @@ class SleepReport {
     required this.remSleepPercent,
     this.isSent = false,
   });
-
-  Map<String, dynamic> toJson() => {
-    'date': date,
-    'sleepScore': sleepScore,
-    // 민감 데이터임 ㅇㅇ..
-    // 'durationInMinutes': durationInMinutes,
-    // 'deepSleepPercent': deepSleepPercent,
-    // 'remSleepPercent': remSleepPercent,
-  };
 }

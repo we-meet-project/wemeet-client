@@ -9,6 +9,13 @@ import 'package:wemeet_client/Feature/Login/Login_screen.dart';
 import 'package:wemeet_client/Feature/Login/Login_viewModel.dart';
 import 'package:wemeet_client/Feature/MainScreen/main_screen.dart';
 import 'package:wemeet_client/Feature/MainScreen/main_view_model.dart';
+import 'package:wemeet_client/Feature/Permission/permission_view.dart';
+import 'package:wemeet_client/Feature/Permission/permission_view_model.dart';
+import 'package:wemeet_client/Feature/ReportScreen/report_screen.dart';
+import 'package:wemeet_client/Feature/ReportScreen/report_view_model.dart';
+import 'package:wemeet_client/Feature/Splash/splash_view.dart';
+import 'package:wemeet_client/Feature/Splash/splash_view_model.dart';
+import 'package:wemeet_client/Model/Sleep_report_model.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:wemeet_client/firebase_options.dart';
 
@@ -18,13 +25,14 @@ import 'package:wemeet_client/Core/Service/repository_service.dart';
 import 'package:wemeet_client/Core/Service/notification_service.dart';
 import 'package:wemeet_client/Core/Service/localprofile_service.dart';
 
-
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((workerName, inputData) async {
     try {
       //백드라운드 환경 초기화
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       await RepositoryService.inst.init(); // Isar DB
       await NotificationService.inst.initBackgroundIsolate(); // 알림
       await LocalprofileService.inst.init(); // SharedPreferences
@@ -41,107 +49,106 @@ void callbackDispatcher() {
   });
 }
 
-
-
 void main() async {
   // Flutter 바인딩 및 intl 초기화
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('ko_KR', null);
-
-  //서비스 객체 초기화
   await RepositoryService.inst.init();
   await LocalprofileService.inst.init();
+  await NotificationService.inst.initMainIsolate((_) {});
 
-  //알람클릭 핸들러
-  void onNotificationTap(NotificationResponse response){
-    print("test alarm");
-  }
-
-  await NotificationService.inst.initMainIsolate(onNotificationTap);
-
-  //workManager 객체 초기화
+  // WorkManager 초기화
   await Workmanager().initialize(callbackDispatcher);
-
-  Taskscheduler.scheduleAllTask();
-
-  final isLoggedIn = LocalprofileService.inst.getUserId() != null;
+  await Taskscheduler.scheduleAllTask();
 
   final dependencyFactory = DependencyFactory();
-  
-  runApp(MyApp(
-    factory : dependencyFactory,
-    initialRoute: isLoggedIn ? '/home' : '/login',
-  ));
+
+  runApp(MyApp(factory: dependencyFactory, initialRoute: '/'));
 }
 
-
-
 class MyApp extends StatelessWidget {
-
   final DependencyFactory factory;
   final String initialRoute;
 
-  const MyApp({
-    super.key,
-    required this.factory,
-    required this. initialRoute
-  });
+  const MyApp({super.key, required this.factory, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         //WorkerManager
-        Provider<WorkerManager>(
-          create: (_) => WorkerManager(factory: factory),
-          ),
+        Provider<WorkerManager>(create: (_) => WorkerManager(factory: factory)),
       ],
 
       child: MaterialApp(
         title: '수면 리포트 프로토타입',
         theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.deepPurpleAccent,
-        scaffoldBackgroundColor: Color(0xFF1A1A2E), // 짙은 남색 배경
-        cardColor: Color(0xFF16213E), // 카드 배경
-        appBarTheme: AppBarTheme(
-          backgroundColor: Color(0xFF1A1A2E),
-          elevation: 0,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
+          primaryColor: Colors.deepPurpleAccent,
+          scaffoldBackgroundColor: Color(0xFF1A1A2E), // 짙은 남색 배경
+          cardColor: Color(0xFF16213E), // 카드 배경
+          appBarTheme: AppBarTheme(
+            backgroundColor: Color(0xFF1A1A2E),
+            elevation: 0,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurpleAccent,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          floatingActionButtonTheme: FloatingActionButtonThemeData(
             backgroundColor: Colors.deepPurpleAccent,
             foregroundColor: Colors.white,
           ),
+          colorScheme: ColorScheme.dark().copyWith(
+            primary: Colors.deepPurpleAccent,
+            secondary: Colors.tealAccent,
+          ),
         ),
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: Colors.deepPurpleAccent,
-          foregroundColor: Colors.white,
-        ),
-        colorScheme: ColorScheme.dark().copyWith(
-          primary: Colors.deepPurpleAccent,
-          secondary: Colors.tealAccent,
-        ),
-      ),
-      debugShowCheckedModeBanner: false,
+        debugShowCheckedModeBanner: false,
 
-      // 경로 설정
-      initialRoute: initialRoute,
+        // 경로 설정
+        initialRoute: initialRoute,
 
-      routes: {
-        '/login' : (context) => ChangeNotifierProvider(
-          create: (context) => LoginViewmodel(workermanager: context.read<WorkerManager>(),),
-          child: const LoginScreen(),
-        ),
-        '/home': (context) => ChangeNotifierProvider(
+        routes: {
+          '/': (context) => ChangeNotifierProvider(
+            create: (_) => SplashViewModel(),
+            child: const SplashScreen(),
+          ),
+          '/login': (context) => ChangeNotifierProvider(
+            create: (context) =>
+                LoginViewmodel(workermanager: context.read<WorkerManager>()),
+            child: const LoginScreen(),
+          ),
+          '/home': (context) => ChangeNotifierProvider(
             create: (context) => MainViewModel(),
             child: MainScreen(),
           ),
-      },
-      
-      
-      )
+          '/permission': (context) => ChangeNotifierProvider(
+            create: (_) => PermissionViewModel(),
+            child: const PermissionScreen(),
+          ),
+        },
+        onGenerateRoute: (settings) {
+          if (settings.name == '/report') {
+            // 1. arguments에서 report 객체 꺼내기
+            final report = settings.arguments as SleepReport;
+
+            // 2. ViewModel에 주입해서 화면 생성
+            return MaterialPageRoute(
+              builder: (context) {
+                return ChangeNotifierProvider(
+                  create: (_) => ReportViewModel(report),
+                  child: const ReportScreen(),
+                );
+              },
+            );
+          }
+          return null;
+        },
+      ),
     );
   }
 }

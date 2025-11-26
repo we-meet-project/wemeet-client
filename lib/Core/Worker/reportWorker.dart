@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:health/health.dart';
+import 'package:wemeet_client/Core/Service/Permission_service.dart';
 import 'package:wemeet_client/Core/Service/notification_service.dart';
 import 'package:wemeet_client/Core/Service/repository_service.dart';
+import 'package:wemeet_client/Core/enums.dart';
 
 import 'package:wemeet_client/Model/Sleep_report_model.dart';
 import '../Worker/worker.dart';
@@ -14,115 +16,97 @@ class ReportWorker implements IWorker {
   final HealthDataService _healthService;
   final RepositoryService _repositoryService;
   final NotificationService _notificationService;
+  final HealthPermissionService _healthPermissionService;
 
   ReportWorker({required Container container})
     : _healthService = container.get<HealthDataService>(),
       _repositoryService = container.get<RepositoryService>(),
-      _notificationService = container.get<NotificationService>();
-
-  //가져올 데이터 타입
-  static final _types = [
-    HealthDataType.SLEEP_ASLEEP, // 수면 중
-    HealthDataType.SLEEP_AWAKE, // 수면 중 깸
-    HealthDataType.SLEEP_DEEP, // 깊은 수면
-    HealthDataType.SLEEP_LIGHT, // 얕은 수면
-    HealthDataType.SLEEP_REM, // REM 수면
-  ];
+      _notificationService = container.get<NotificationService>(),
+      _healthPermissionService = container.get<HealthPermissionService>();
 
   //Googel Health Connect를 통해 데이터 가져오기
   Future<SleepReport?> createReport(
     DateTime startTime,
     DateTime endTime,
   ) async {
-    bool hasPerm = await checkHealthPermission(_types);
-    try {
-      if (hasPerm) {
-        //데이터 가져오기
-        List<HealthDataPoint> data = await _healthService.getSleepData(
-          startTime: startTime,
-          endTime: endTime,
-          type: _types,
-        );
+    //데이터 가져오기
+    List<HealthDataPoint> data = await _healthService.getSleepData(
+      startTime: startTime,
+      endTime: endTime,
+      type: types,
+    );
 
-        //가져온 데이터 확인
-        if (data.isEmpty) {
-          print('API 호출 성공. 하지만 해당 기간에 수면 데이터가 없습니다.');
-          return null;
-        }
-
-        Duration totalSleepDuration = Duration.zero;
-        Duration deepSleepDuration = Duration.zero;
-        Duration remSleepDuration = Duration.zero;
-        Duration lightSleepDuration = Duration.zero;
-        DateTime? sessionStartTime; // 실제 수면 시작 시간
-
-        for (var point in data) {
-          //가장 이른 시작 시간을 수면 세션의 시작 시간으로 간주
-          if (sessionStartTime == null ||
-              point.dateFrom.isBefore(sessionStartTime)) {
-            sessionStartTime = point.dateFrom;
-          }
-
-          final duration = point.dateTo.difference(point.dateFrom);
-
-          switch (point.type) {
-            case HealthDataType.SLEEP_DEEP:
-              deepSleepDuration += duration;
-              break;
-            case HealthDataType.SLEEP_REM:
-              remSleepDuration += duration;
-              break;
-            case HealthDataType.SLEEP_LIGHT:
-              lightSleepDuration += duration;
-              break;
-            // SLEEP_ASLEEP, SLEEP_AWAKE는 총 수면 시간 계산 시
-            // (Deep + REM + Light)의 합계를 사용할 것이므로 여기서는 집계하지 않음.
-            case HealthDataType.SLEEP_ASLEEP:
-            case HealthDataType.SLEEP_AWAKE:
-            default:
-              break;
-          }
-        }
-
-        //총 수면 시간 (깊은 잠 + 얕은 잠 + REM)
-        totalSleepDuration =
-            deepSleepDuration + remSleepDuration + lightSleepDuration;
-
-        if (totalSleepDuration == Duration.zero) {
-          print('수면 데이터는 있으나, 유의미한 수면 단계(Deep, REM, Light) 데이터가 없습니다.');
-          return null;
-        }
-
-        // 2. 백분율 계산 (총 수면 시간 대비)
-        final totalMinutes = totalSleepDuration.inMinutes;
-        final int deepPercent =
-            ((deepSleepDuration.inMinutes / totalMinutes) * 100).round();
-        final int remPercent =
-            ((remSleepDuration.inMinutes / totalMinutes) * 100).round();
-
-        // 3. 수면 점수 계산 (임시)
-        double finalSleepScore = _calculateSleepScore(
-          totalSleepDuration,
-          deepPercent,
-          remPercent,
-        );
-
-        final report = SleepReport(
-          date: sessionStartTime ?? startTime,
-          sleepScore: finalSleepScore,
-          durationInMinutes: totalSleepDuration.inMinutes,
-          deepSleepPercent: deepPercent,
-          remSleepPercent: remPercent,
-        );
-        return report;
-      } //hasPerm
-      else {
-        throw HealthPermissionExpection();
-      } //else
-    } //try
-    catch (e) {
+    //가져온 데이터 확인
+    if (data.isEmpty) {
+      print('API 호출 성공. 하지만 해당 기간에 수면 데이터가 없습니다.');
       return null;
-    } //catch
+    }
+
+    Duration totalSleepDuration = Duration.zero;
+    Duration deepSleepDuration = Duration.zero;
+    Duration remSleepDuration = Duration.zero;
+    Duration lightSleepDuration = Duration.zero;
+    DateTime? sessionStartTime; // 실제 수면 시작 시간
+
+    for (var point in data) {
+      //가장 이른 시작 시간을 수면 세션의 시작 시간으로 간주
+      if (sessionStartTime == null ||
+          point.dateFrom.isBefore(sessionStartTime)) {
+        sessionStartTime = point.dateFrom;
+      }
+
+      final duration = point.dateTo.difference(point.dateFrom);
+
+      switch (point.type) {
+        case HealthDataType.SLEEP_DEEP:
+          deepSleepDuration += duration;
+          break;
+        case HealthDataType.SLEEP_REM:
+          remSleepDuration += duration;
+          break;
+        case HealthDataType.SLEEP_LIGHT:
+          lightSleepDuration += duration;
+          break;
+        // SLEEP_ASLEEP, SLEEP_AWAKE는 총 수면 시간 계산 시
+        // (Deep + REM + Light)의 합계를 사용할 것이므로 여기서는 집계하지 않음.
+        case HealthDataType.SLEEP_ASLEEP:
+        case HealthDataType.SLEEP_AWAKE:
+        default:
+          break;
+      }
+    }
+
+    //총 수면 시간 (깊은 잠 + 얕은 잠 + REM)
+    totalSleepDuration =
+        deepSleepDuration + remSleepDuration + lightSleepDuration;
+
+    if (totalSleepDuration == Duration.zero) {
+      print('수면 데이터는 있으나, 유의미한 수면 단계(Deep, REM, Light) 데이터가 없습니다.');
+      return null;
+    }
+
+    // 2. 백분율 계산 (총 수면 시간 대비)
+    final totalMinutes = totalSleepDuration.inMinutes;
+    final int deepPercent = ((deepSleepDuration.inMinutes / totalMinutes) * 100)
+        .round();
+    final int remPercent = ((remSleepDuration.inMinutes / totalMinutes) * 100)
+        .round();
+
+    // 3. 수면 점수 계산 (임시)
+    double finalSleepScore = _calculateSleepScore(
+      totalSleepDuration,
+      deepPercent,
+      remPercent,
+    );
+
+    final report = SleepReport(
+      date: sessionStartTime ?? startTime,
+      sleepScore: finalSleepScore,
+      durationInMinutes: totalSleepDuration.inMinutes,
+      deepSleepPercent: deepPercent,
+      remSleepPercent: remPercent,
+    );
+    return report;
   }
 
   //임시
@@ -207,6 +191,13 @@ class ReportWorker implements IWorker {
     }
 
     try {
+      final hasPerm = await _healthPermissionService.checkHealthPermission(
+        types,
+      );
+      if (!hasPerm) {
+        return false;
+      }
+
       //DB 중복확인
       if (await _repositoryService.getReportForDate(targetDate) != null)
         return true;
@@ -240,7 +231,12 @@ class ReportWorker implements IWorker {
 }
 
 Future<IWorker> createReporthWorker(DependencyFactory factory) async {
-  final types = [HealthDataService, RepositoryService, NotificationService];
+  final types = [
+    HealthDataService,
+    RepositoryService,
+    NotificationService,
+    HealthPermissionService,
+  ];
 
   final container = factory.createContainer(types);
 
