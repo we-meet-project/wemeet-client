@@ -1,8 +1,9 @@
-// import 'package:health/health.dart'; // health 패키지
+// import 'package:health/health.dart';
+// import 'package:wemeet_client/Core/Service/health_service.dart'; // health 패키지
 
 // class SleepRepository {
-//   final HealthService _healthService;
-//   final HealthWorker _healthWorker;
+//   final HealthDataService _healthService;
+//   final  _healthWorker;
 //   final SleepLocalDatasource _localDatasource;
 
 //   SleepRepository({
@@ -97,6 +98,5 @@
 //         DateTime.now().subtract(const Duration(days: 30)); // 예: 30일 전
 //     DateTime endDate = DateTime.now();
 
-//     // ... syncSleepData와 유사한 로직 수행 ...
 //   }
 // }

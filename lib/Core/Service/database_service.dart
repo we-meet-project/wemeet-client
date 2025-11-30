@@ -65,8 +65,8 @@ class DataBaseService {
         'date': report.date, // Firestore Timestamp로 자동 변환됨
         'sleepScore': report.sleepScore,
         'durationInMinutes': report.durationInMinutes,
-        'deepSleepPercent': report.deepSleepPercent,
-        'remSleepPercent': report.remSleepPercent,
+        'deepSleepPercent': report.deepSleepMinutes,
+        'remSleepPercent': report.remSleepMinutes,
         'updatedAt': FieldValue.serverTimestamp(),
       };
 

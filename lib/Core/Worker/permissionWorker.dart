@@ -1,20 +1,21 @@
+import 'dart:convert';
+
 import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wemeet_client/Core/Service/Permission_service.dart';
 import 'package:wemeet_client/Core/Worker/worker.dart';
 import 'package:wemeet_client/Core/di/container.dart';
 import 'package:wemeet_client/Core/di/dependency_factory.dart';
+import 'package:wemeet_client/Core/enums.dart';
 
 class Permissionworker implements IWorker {
   final HealthPermissionService _healthPermissionService;
-  final PermissionService _permissionService;
 
   Permissionworker({required Container container})
-    : _healthPermissionService = container.get<HealthPermissionService>(),
-      _permissionService = container.get<PermissionService>();
+    : _healthPermissionService = container.get<HealthPermissionService>();
 
   static final Map<String, List<HealthDataType>> _healthMapping = {
-    'sleep': [
+    PermissionTarget.sleep: [
       HealthDataType.SLEEP_ASLEEP,
       HealthDataType.SLEEP_AWAKE,
       HealthDataType.SLEEP_DEEP,
@@ -23,62 +24,89 @@ class Permissionworker implements IWorker {
     ],
   };
 
-  static final Map<String, List<Permission>> _permMapping = {
-    'notification': [Permission.notification],
-    'activity': [Permission.activityRecognition],
+  static final Map<String, Permission> _permMapping = {
+    PermissionTarget.notification: Permission.notification,
   };
 
   @override
   Future run(Map<String, dynamic>? inputData) async {
     final String action =
-        inputData?['action'] ?? 'check'; // 'check' or 'request'
+        inputData?['action'] ?? PermissionAction.check; // 'check' or 'request'
     final String category =
-        inputData?['category'] ?? 'standard'; // 'standard' or 'health'
+        inputData?['category'] ??
+        PermissionCategory.standard; // 'standard' or 'health'
 
-    final String? target = inputData?['target'];
+    String? json = inputData?['target'];
+    if (json == null) return false;
+    List<dynamic> rawData = jsonDecode(json);
+    List<String> target = rawData.cast<String>();
 
-    if (target == null) return PermissionStatus.denied.index;
-
-    if (category == 'health') {
-      // 매핑된 리스트 가져오기
-      final List<HealthDataType>? targets = _healthMapping[target];
-      if (targets == null) {
-        print("정의되지 않은 Health Target: $target");
-        return PermissionStatus.denied.index;
-      }
-      bool isGranted;
-      if (action == 'check') {
-        isGranted = await _healthPermissionService.checkHealthPermission(
-          targets,
-        );
-      } else {
-        isGranted = await _healthPermissionService.requestHealthPermission(
-          targets,
-        );
-      }
-      return isGranted
-          ? PermissionStatus.granted.index
-          : PermissionStatus.denied.index;
+    if (category == PermissionCategory.health) {
+      return await _handleHealthPermission(action, target);
     } else {
-      final List<Permission>? targets = _permMapping[target];
-      if (targets == null) {
+      return await _handleStandardPermission(action, target);
+    }
+  }
+
+  Future<Map<String, PermissionStatus>> _handleHealthPermission(
+    String action,
+    List<String> targets,
+  ) async {
+    final entry = targets.map((target) async {
+      final List<HealthDataType>? perm = _healthMapping[target];
+
+      if (perm == null) {
         print("정의되지 않은 Permission Target: $target");
-        return PermissionStatus.denied.index;
-      }
-      PermissionStatus status;
-      if (action == 'check') {
-        status = await _permissionService.checkCurrentStatus(targets);
-      } else {
-        status = await _permissionService.requestPermission(targets);
+        return MapEntry(target, PermissionStatus.denied);
       }
 
-      return status.index;
-    }
+      PermissionStatus status;
+      if (action == PermissionAction.check) {
+        status = await _healthPermissionService.checkHealthPermission(perm)
+            ? PermissionStatus.granted
+            : PermissionStatus.denied;
+      } else {
+        status = await _healthPermissionService.requestHealthPermission(perm)
+            ? PermissionStatus.granted
+            : PermissionStatus.denied;
+      }
+
+      return MapEntry(target, status);
+    });
+
+    final entries = await Future.wait(entry);
+    return Map.fromEntries(entries);
+  }
+
+  Future<Map<String, PermissionStatus>> _handleStandardPermission(
+    String action,
+    List<String> targets,
+  ) async {
+    final entry = targets.map((target) async {
+      final Permission? perm = _permMapping[target];
+
+      if (perm == null) {
+        print("정의되지 않은 Permission Target: $target");
+        return MapEntry(target, PermissionStatus.denied);
+      }
+
+      PermissionStatus status;
+      if (action == PermissionAction.check) {
+        status = await perm.status;
+      } else {
+        status = await perm.request();
+      }
+
+      return MapEntry(target, status);
+    });
+
+    final entries = await Future.wait(entry);
+    return Map.fromEntries(entries);
   }
 }
 
 Future<IWorker> createPermissionWorker(DependencyFactory factory) async {
-  final types = [HealthPermissionService, PermissionService];
+  final types = [HealthPermissionService];
 
   final container = factory.createContainer(types);
   return Permissionworker(container: container);

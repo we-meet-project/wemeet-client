@@ -17,33 +17,103 @@ const SleepReportSchema = CollectionSchema(
   name: r'SleepReport',
   id: -602473489360408529,
   properties: {
-    r'date': PropertySchema(
+    r'awakeSleepMinutes': PropertySchema(
       id: 0,
+      name: r'awakeSleepMinutes',
+      type: IsarType.long,
+    ),
+    r'comment': PropertySchema(
+      id: 1,
+      name: r'comment',
+      type: IsarType.string,
+    ),
+    r'date': PropertySchema(
+      id: 2,
       name: r'date',
       type: IsarType.dateTime,
     ),
-    r'deepSleepPercent': PropertySchema(
-      id: 1,
-      name: r'deepSleepPercent',
+    r'deepSleepMinutes': PropertySchema(
+      id: 3,
+      name: r'deepSleepMinutes',
       type: IsarType.long,
     ),
     r'durationInMinutes': PropertySchema(
-      id: 2,
+      id: 4,
       name: r'durationInMinutes',
       type: IsarType.long,
     ),
+    r'formattedAwakeSleep': PropertySchema(
+      id: 5,
+      name: r'formattedAwakeSleep',
+      type: IsarType.string,
+    ),
+    r'formattedDeepSleep': PropertySchema(
+      id: 6,
+      name: r'formattedDeepSleep',
+      type: IsarType.string,
+    ),
+    r'formattedLightSleep': PropertySchema(
+      id: 7,
+      name: r'formattedLightSleep',
+      type: IsarType.string,
+    ),
+    r'formattedRemSleep': PropertySchema(
+      id: 8,
+      name: r'formattedRemSleep',
+      type: IsarType.string,
+    ),
+    r'formattedTotal': PropertySchema(
+      id: 9,
+      name: r'formattedTotal',
+      type: IsarType.string,
+    ),
     r'isSent': PropertySchema(
-      id: 3,
+      id: 10,
       name: r'isSent',
       type: IsarType.bool,
     ),
-    r'remSleepPercent': PropertySchema(
-      id: 4,
-      name: r'remSleepPercent',
+    r'lightSleepMinutes': PropertySchema(
+      id: 11,
+      name: r'lightSleepMinutes',
+      type: IsarType.long,
+    ),
+    r'moodIndex': PropertySchema(
+      id: 12,
+      name: r'moodIndex',
+      type: IsarType.long,
+    ),
+    r'percentAwake': PropertySchema(
+      id: 13,
+      name: r'percentAwake',
+      type: IsarType.double,
+    ),
+    r'percentDeep': PropertySchema(
+      id: 14,
+      name: r'percentDeep',
+      type: IsarType.double,
+    ),
+    r'percentLight': PropertySchema(
+      id: 15,
+      name: r'percentLight',
+      type: IsarType.double,
+    ),
+    r'percentRem': PropertySchema(
+      id: 16,
+      name: r'percentRem',
+      type: IsarType.double,
+    ),
+    r'remSleepMinutes': PropertySchema(
+      id: 17,
+      name: r'remSleepMinutes',
+      type: IsarType.long,
+    ),
+    r'sleepRating': PropertySchema(
+      id: 18,
+      name: r'sleepRating',
       type: IsarType.long,
     ),
     r'sleepScore': PropertySchema(
-      id: 5,
+      id: 19,
       name: r'sleepScore',
       type: IsarType.double,
     )
@@ -95,6 +165,17 @@ int _sleepReportEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.comment;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.formattedAwakeSleep.length * 3;
+  bytesCount += 3 + object.formattedDeepSleep.length * 3;
+  bytesCount += 3 + object.formattedLightSleep.length * 3;
+  bytesCount += 3 + object.formattedRemSleep.length * 3;
+  bytesCount += 3 + object.formattedTotal.length * 3;
   return bytesCount;
 }
 
@@ -104,12 +185,26 @@ void _sleepReportSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.date);
-  writer.writeLong(offsets[1], object.deepSleepPercent);
-  writer.writeLong(offsets[2], object.durationInMinutes);
-  writer.writeBool(offsets[3], object.isSent);
-  writer.writeLong(offsets[4], object.remSleepPercent);
-  writer.writeDouble(offsets[5], object.sleepScore);
+  writer.writeLong(offsets[0], object.awakeSleepMinutes);
+  writer.writeString(offsets[1], object.comment);
+  writer.writeDateTime(offsets[2], object.date);
+  writer.writeLong(offsets[3], object.deepSleepMinutes);
+  writer.writeLong(offsets[4], object.durationInMinutes);
+  writer.writeString(offsets[5], object.formattedAwakeSleep);
+  writer.writeString(offsets[6], object.formattedDeepSleep);
+  writer.writeString(offsets[7], object.formattedLightSleep);
+  writer.writeString(offsets[8], object.formattedRemSleep);
+  writer.writeString(offsets[9], object.formattedTotal);
+  writer.writeBool(offsets[10], object.isSent);
+  writer.writeLong(offsets[11], object.lightSleepMinutes);
+  writer.writeLong(offsets[12], object.moodIndex);
+  writer.writeDouble(offsets[13], object.percentAwake);
+  writer.writeDouble(offsets[14], object.percentDeep);
+  writer.writeDouble(offsets[15], object.percentLight);
+  writer.writeDouble(offsets[16], object.percentRem);
+  writer.writeLong(offsets[17], object.remSleepMinutes);
+  writer.writeLong(offsets[18], object.sleepRating);
+  writer.writeDouble(offsets[19], object.sleepScore);
 }
 
 SleepReport _sleepReportDeserialize(
@@ -119,12 +214,17 @@ SleepReport _sleepReportDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = SleepReport(
-    date: reader.readDateTime(offsets[0]),
-    deepSleepPercent: reader.readLong(offsets[1]),
-    durationInMinutes: reader.readLong(offsets[2]),
-    isSent: reader.readBoolOrNull(offsets[3]) ?? false,
-    remSleepPercent: reader.readLong(offsets[4]),
-    sleepScore: reader.readDouble(offsets[5]),
+    awakeSleepMinutes: reader.readLong(offsets[0]),
+    comment: reader.readStringOrNull(offsets[1]),
+    date: reader.readDateTime(offsets[2]),
+    deepSleepMinutes: reader.readLong(offsets[3]),
+    durationInMinutes: reader.readLong(offsets[4]),
+    isSent: reader.readBoolOrNull(offsets[10]) ?? false,
+    lightSleepMinutes: reader.readLong(offsets[11]),
+    moodIndex: reader.readLongOrNull(offsets[12]),
+    remSleepMinutes: reader.readLong(offsets[17]),
+    sleepRating: reader.readLongOrNull(offsets[18]),
+    sleepScore: reader.readDouble(offsets[19]),
   );
   object.id = id;
   return object;
@@ -138,16 +238,44 @@ P _sleepReportDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 1:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 3:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
+      return (reader.readLong(offset)) as P;
     case 4:
       return (reader.readLong(offset)) as P;
     case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
+      return (reader.readString(offset)) as P;
+    case 7:
+      return (reader.readString(offset)) as P;
+    case 8:
+      return (reader.readString(offset)) as P;
+    case 9:
+      return (reader.readString(offset)) as P;
+    case 10:
+      return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 11:
+      return (reader.readLong(offset)) as P;
+    case 12:
+      return (reader.readLongOrNull(offset)) as P;
+    case 13:
+      return (reader.readDouble(offset)) as P;
+    case 14:
+      return (reader.readDouble(offset)) as P;
+    case 15:
+      return (reader.readDouble(offset)) as P;
+    case 16:
+      return (reader.readDouble(offset)) as P;
+    case 17:
+      return (reader.readLong(offset)) as P;
+    case 18:
+      return (reader.readLongOrNull(offset)) as P;
+    case 19:
       return (reader.readDouble(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -398,6 +526,214 @@ extension SleepReportQueryWhere
 
 extension SleepReportQueryFilter
     on QueryBuilder<SleepReport, SleepReport, QFilterCondition> {
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      awakeSleepMinutesEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'awakeSleepMinutes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      awakeSleepMinutesGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'awakeSleepMinutes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      awakeSleepMinutesLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'awakeSleepMinutes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      awakeSleepMinutesBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'awakeSleepMinutes',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      commentIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'comment',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      commentIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'comment',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition> commentEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'comment',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      commentGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'comment',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition> commentLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'comment',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition> commentBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'comment',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      commentStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'comment',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition> commentEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'comment',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition> commentContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'comment',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition> commentMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'comment',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      commentIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'comment',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      commentIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'comment',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition> dateEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -452,45 +788,45 @@ extension SleepReportQueryFilter
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
-      deepSleepPercentEqualTo(int value) {
+      deepSleepMinutesEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'deepSleepPercent',
+        property: r'deepSleepMinutes',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
-      deepSleepPercentGreaterThan(
+      deepSleepMinutesGreaterThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'deepSleepPercent',
+        property: r'deepSleepMinutes',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
-      deepSleepPercentLessThan(
+      deepSleepMinutesLessThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'deepSleepPercent',
+        property: r'deepSleepMinutes',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
-      deepSleepPercentBetween(
+      deepSleepMinutesBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -498,7 +834,7 @@ extension SleepReportQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'deepSleepPercent',
+        property: r'deepSleepMinutes',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -559,6 +895,686 @@ extension SleepReportQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedAwakeSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'formattedAwakeSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'formattedAwakeSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'formattedAwakeSleep',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'formattedAwakeSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'formattedAwakeSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'formattedAwakeSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'formattedAwakeSleep',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedAwakeSleep',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedAwakeSleepIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'formattedAwakeSleep',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedDeepSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'formattedDeepSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'formattedDeepSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'formattedDeepSleep',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'formattedDeepSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'formattedDeepSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'formattedDeepSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'formattedDeepSleep',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedDeepSleep',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedDeepSleepIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'formattedDeepSleep',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedLightSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'formattedLightSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'formattedLightSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'formattedLightSleep',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'formattedLightSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'formattedLightSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'formattedLightSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'formattedLightSleep',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedLightSleep',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedLightSleepIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'formattedLightSleep',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedRemSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'formattedRemSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'formattedRemSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'formattedRemSleep',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'formattedRemSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'formattedRemSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'formattedRemSleep',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'formattedRemSleep',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedRemSleep',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedRemSleepIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'formattedRemSleep',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedTotal',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'formattedTotal',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'formattedTotal',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'formattedTotal',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'formattedTotal',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'formattedTotal',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'formattedTotal',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'formattedTotal',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'formattedTotal',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      formattedTotalIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'formattedTotal',
+        value: '',
       ));
     });
   }
@@ -627,45 +1643,45 @@ extension SleepReportQueryFilter
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
-      remSleepPercentEqualTo(int value) {
+      lightSleepMinutesEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'remSleepPercent',
+        property: r'lightSleepMinutes',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
-      remSleepPercentGreaterThan(
+      lightSleepMinutesGreaterThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'remSleepPercent',
+        property: r'lightSleepMinutes',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
-      remSleepPercentLessThan(
+      lightSleepMinutesLessThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'remSleepPercent',
+        property: r'lightSleepMinutes',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
-      remSleepPercentBetween(
+      lightSleepMinutesBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -673,7 +1689,475 @@ extension SleepReportQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'remSleepPercent',
+        property: r'lightSleepMinutes',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      moodIndexIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'moodIndex',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      moodIndexIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'moodIndex',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      moodIndexEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'moodIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      moodIndexGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'moodIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      moodIndexLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'moodIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      moodIndexBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'moodIndex',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentAwakeEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'percentAwake',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentAwakeGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'percentAwake',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentAwakeLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'percentAwake',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentAwakeBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'percentAwake',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentDeepEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'percentDeep',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentDeepGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'percentDeep',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentDeepLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'percentDeep',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentDeepBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'percentDeep',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentLightEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'percentLight',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentLightGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'percentLight',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentLightLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'percentLight',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentLightBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'percentLight',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentRemEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'percentRem',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentRemGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'percentRem',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentRemLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'percentRem',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      percentRemBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'percentRem',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      remSleepMinutesEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remSleepMinutes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      remSleepMinutesGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'remSleepMinutes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      remSleepMinutesLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'remSleepMinutes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      remSleepMinutesBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'remSleepMinutes',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      sleepRatingIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'sleepRating',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      sleepRatingIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'sleepRating',
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      sleepRatingEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sleepRating',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      sleepRatingGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sleepRating',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      sleepRatingLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sleepRating',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterFilterCondition>
+      sleepRatingBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sleepRating',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -757,6 +2241,32 @@ extension SleepReportQueryLinks
 
 extension SleepReportQuerySortBy
     on QueryBuilder<SleepReport, SleepReport, QSortBy> {
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByAwakeSleepMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'awakeSleepMinutes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByAwakeSleepMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'awakeSleepMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByComment() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'comment', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByCommentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'comment', Sort.desc);
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.asc);
@@ -770,16 +2280,16 @@ extension SleepReportQuerySortBy
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
-      sortByDeepSleepPercent() {
+      sortByDeepSleepMinutes() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'deepSleepPercent', Sort.asc);
+      return query.addSortBy(r'deepSleepMinutes', Sort.asc);
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
-      sortByDeepSleepPercentDesc() {
+      sortByDeepSleepMinutesDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'deepSleepPercent', Sort.desc);
+      return query.addSortBy(r'deepSleepMinutes', Sort.desc);
     });
   }
 
@@ -797,6 +2307,75 @@ extension SleepReportQuerySortBy
     });
   }
 
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedAwakeSleep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedAwakeSleep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedAwakeSleepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedAwakeSleep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedDeepSleep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedDeepSleep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedDeepSleepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedDeepSleep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedLightSleep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedLightSleep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedLightSleepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedLightSleep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedRemSleep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedRemSleep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedRemSleepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedRemSleep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByFormattedTotal() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedTotal', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByFormattedTotalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedTotal', Sort.desc);
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByIsSent() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isSent', Sort.asc);
@@ -809,16 +2388,104 @@ extension SleepReportQuerySortBy
     });
   }
 
-  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByRemSleepPercent() {
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByLightSleepMinutes() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'remSleepPercent', Sort.asc);
+      return query.addSortBy(r'lightSleepMinutes', Sort.asc);
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
-      sortByRemSleepPercentDesc() {
+      sortByLightSleepMinutesDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'remSleepPercent', Sort.desc);
+      return query.addSortBy(r'lightSleepMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByMoodIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'moodIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByMoodIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'moodIndex', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByPercentAwake() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentAwake', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByPercentAwakeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentAwake', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByPercentDeep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentDeep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByPercentDeepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentDeep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByPercentLight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentLight', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByPercentLightDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentLight', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByPercentRem() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentRem', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByPercentRemDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentRem', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortByRemSleepMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remSleepMinutes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      sortByRemSleepMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remSleepMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortBySleepRating() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sleepRating', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> sortBySleepRatingDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sleepRating', Sort.desc);
     });
   }
 
@@ -837,6 +2504,32 @@ extension SleepReportQuerySortBy
 
 extension SleepReportQuerySortThenBy
     on QueryBuilder<SleepReport, SleepReport, QSortThenBy> {
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByAwakeSleepMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'awakeSleepMinutes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByAwakeSleepMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'awakeSleepMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByComment() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'comment', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByCommentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'comment', Sort.desc);
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.asc);
@@ -850,16 +2543,16 @@ extension SleepReportQuerySortThenBy
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
-      thenByDeepSleepPercent() {
+      thenByDeepSleepMinutes() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'deepSleepPercent', Sort.asc);
+      return query.addSortBy(r'deepSleepMinutes', Sort.asc);
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
-      thenByDeepSleepPercentDesc() {
+      thenByDeepSleepMinutesDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'deepSleepPercent', Sort.desc);
+      return query.addSortBy(r'deepSleepMinutes', Sort.desc);
     });
   }
 
@@ -874,6 +2567,75 @@ extension SleepReportQuerySortThenBy
       thenByDurationInMinutesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'durationInMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedAwakeSleep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedAwakeSleep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedAwakeSleepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedAwakeSleep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedDeepSleep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedDeepSleep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedDeepSleepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedDeepSleep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedLightSleep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedLightSleep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedLightSleepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedLightSleep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedRemSleep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedRemSleep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedRemSleepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedRemSleep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByFormattedTotal() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedTotal', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByFormattedTotalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'formattedTotal', Sort.desc);
     });
   }
 
@@ -901,16 +2663,104 @@ extension SleepReportQuerySortThenBy
     });
   }
 
-  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByRemSleepPercent() {
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByLightSleepMinutes() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'remSleepPercent', Sort.asc);
+      return query.addSortBy(r'lightSleepMinutes', Sort.asc);
     });
   }
 
   QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
-      thenByRemSleepPercentDesc() {
+      thenByLightSleepMinutesDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'remSleepPercent', Sort.desc);
+      return query.addSortBy(r'lightSleepMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByMoodIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'moodIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByMoodIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'moodIndex', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByPercentAwake() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentAwake', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByPercentAwakeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentAwake', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByPercentDeep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentDeep', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByPercentDeepDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentDeep', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByPercentLight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentLight', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByPercentLightDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentLight', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByPercentRem() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentRem', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByPercentRemDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'percentRem', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenByRemSleepMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remSleepMinutes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy>
+      thenByRemSleepMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remSleepMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenBySleepRating() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sleepRating', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QAfterSortBy> thenBySleepRatingDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sleepRating', Sort.desc);
     });
   }
 
@@ -929,6 +2779,20 @@ extension SleepReportQuerySortThenBy
 
 extension SleepReportQueryWhereDistinct
     on QueryBuilder<SleepReport, SleepReport, QDistinct> {
+  QueryBuilder<SleepReport, SleepReport, QDistinct>
+      distinctByAwakeSleepMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'awakeSleepMinutes');
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByComment(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'comment', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'date');
@@ -936,9 +2800,9 @@ extension SleepReportQueryWhereDistinct
   }
 
   QueryBuilder<SleepReport, SleepReport, QDistinct>
-      distinctByDeepSleepPercent() {
+      distinctByDeepSleepMinutes() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'deepSleepPercent');
+      return query.addDistinctBy(r'deepSleepMinutes');
     });
   }
 
@@ -949,6 +2813,46 @@ extension SleepReportQueryWhereDistinct
     });
   }
 
+  QueryBuilder<SleepReport, SleepReport, QDistinct>
+      distinctByFormattedAwakeSleep({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'formattedAwakeSleep',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct>
+      distinctByFormattedDeepSleep({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'formattedDeepSleep',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct>
+      distinctByFormattedLightSleep({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'formattedLightSleep',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByFormattedRemSleep(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'formattedRemSleep',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByFormattedTotal(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'formattedTotal',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByIsSent() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isSent');
@@ -956,9 +2860,52 @@ extension SleepReportQueryWhereDistinct
   }
 
   QueryBuilder<SleepReport, SleepReport, QDistinct>
-      distinctByRemSleepPercent() {
+      distinctByLightSleepMinutes() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'remSleepPercent');
+      return query.addDistinctBy(r'lightSleepMinutes');
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByMoodIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'moodIndex');
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByPercentAwake() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'percentAwake');
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByPercentDeep() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'percentDeep');
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByPercentLight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'percentLight');
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctByPercentRem() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'percentRem');
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct>
+      distinctByRemSleepMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'remSleepMinutes');
+    });
+  }
+
+  QueryBuilder<SleepReport, SleepReport, QDistinct> distinctBySleepRating() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sleepRating');
     });
   }
 
@@ -977,15 +2924,27 @@ extension SleepReportQueryProperty
     });
   }
 
+  QueryBuilder<SleepReport, int, QQueryOperations> awakeSleepMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'awakeSleepMinutes');
+    });
+  }
+
+  QueryBuilder<SleepReport, String?, QQueryOperations> commentProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'comment');
+    });
+  }
+
   QueryBuilder<SleepReport, DateTime, QQueryOperations> dateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'date');
     });
   }
 
-  QueryBuilder<SleepReport, int, QQueryOperations> deepSleepPercentProperty() {
+  QueryBuilder<SleepReport, int, QQueryOperations> deepSleepMinutesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'deepSleepPercent');
+      return query.addPropertyName(r'deepSleepMinutes');
     });
   }
 
@@ -995,15 +2954,91 @@ extension SleepReportQueryProperty
     });
   }
 
+  QueryBuilder<SleepReport, String, QQueryOperations>
+      formattedAwakeSleepProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'formattedAwakeSleep');
+    });
+  }
+
+  QueryBuilder<SleepReport, String, QQueryOperations>
+      formattedDeepSleepProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'formattedDeepSleep');
+    });
+  }
+
+  QueryBuilder<SleepReport, String, QQueryOperations>
+      formattedLightSleepProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'formattedLightSleep');
+    });
+  }
+
+  QueryBuilder<SleepReport, String, QQueryOperations>
+      formattedRemSleepProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'formattedRemSleep');
+    });
+  }
+
+  QueryBuilder<SleepReport, String, QQueryOperations> formattedTotalProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'formattedTotal');
+    });
+  }
+
   QueryBuilder<SleepReport, bool, QQueryOperations> isSentProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isSent');
     });
   }
 
-  QueryBuilder<SleepReport, int, QQueryOperations> remSleepPercentProperty() {
+  QueryBuilder<SleepReport, int, QQueryOperations> lightSleepMinutesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'remSleepPercent');
+      return query.addPropertyName(r'lightSleepMinutes');
+    });
+  }
+
+  QueryBuilder<SleepReport, int?, QQueryOperations> moodIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'moodIndex');
+    });
+  }
+
+  QueryBuilder<SleepReport, double, QQueryOperations> percentAwakeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'percentAwake');
+    });
+  }
+
+  QueryBuilder<SleepReport, double, QQueryOperations> percentDeepProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'percentDeep');
+    });
+  }
+
+  QueryBuilder<SleepReport, double, QQueryOperations> percentLightProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'percentLight');
+    });
+  }
+
+  QueryBuilder<SleepReport, double, QQueryOperations> percentRemProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'percentRem');
+    });
+  }
+
+  QueryBuilder<SleepReport, int, QQueryOperations> remSleepMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'remSleepMinutes');
+    });
+  }
+
+  QueryBuilder<SleepReport, int?, QQueryOperations> sleepRatingProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sleepRating');
     });
   }
 

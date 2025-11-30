@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:wemeet_client/Core/Core/taskScheduler.dart';
@@ -11,10 +10,11 @@ import 'package:wemeet_client/Feature/MainScreen/main_screen.dart';
 import 'package:wemeet_client/Feature/MainScreen/main_view_model.dart';
 import 'package:wemeet_client/Feature/Permission/permission_view.dart';
 import 'package:wemeet_client/Feature/Permission/permission_view_model.dart';
-import 'package:wemeet_client/Feature/ReportScreen/report_screen.dart';
+import 'package:wemeet_client/Feature/ReportScreen/SleepDetailScreen.dart';
 import 'package:wemeet_client/Feature/ReportScreen/report_view_model.dart';
 import 'package:wemeet_client/Feature/Splash/splash_view.dart';
 import 'package:wemeet_client/Feature/Splash/splash_view_model.dart';
+import 'package:wemeet_client/Feature/Survey/survey_view_model.dart';
 import 'package:wemeet_client/Model/Sleep_report_model.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:wemeet_client/firebase_options.dart';
@@ -114,7 +114,8 @@ class MyApp extends StatelessWidget {
 
         routes: {
           '/': (context) => ChangeNotifierProvider(
-            create: (_) => SplashViewModel(),
+            create: (_) =>
+                SplashViewModel(workManager: context.read<WorkerManager>()),
             child: const SplashScreen(),
           ),
           '/login': (context) => ChangeNotifierProvider(
@@ -123,11 +124,14 @@ class MyApp extends StatelessWidget {
             child: const LoginScreen(),
           ),
           '/home': (context) => ChangeNotifierProvider(
-            create: (context) => MainViewModel(),
-            child: MainScreen(),
+            create: (context) =>
+                MainViewModel(workmanager: context.read<WorkerManager>()),
+            child: const MainScreen(),
           ),
           '/permission': (context) => ChangeNotifierProvider(
-            create: (_) => PermissionViewModel(),
+            create: (_) => PermissionViewModel(
+              workerManager: context.read<WorkerManager>(),
+            ),
             child: const PermissionScreen(),
           ),
         },
@@ -135,17 +139,35 @@ class MyApp extends StatelessWidget {
           if (settings.name == '/report') {
             // 1. arguments에서 report 객체 꺼내기
             final report = settings.arguments as SleepReport;
-
-            // 2. ViewModel에 주입해서 화면 생성
             return MaterialPageRoute(
-              builder: (context) {
-                return ChangeNotifierProvider(
-                  create: (_) => ReportViewModel(report),
-                  child: const ReportScreen(),
-                );
-              },
+              builder: (context) => MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(
+                    create: (_) => ReportViewModel(report),
+                  ),
+                  ChangeNotifierProvider(
+                    create: (_) => SurveyViewModel(report),
+                  ),
+                ],
+                child: const SleepDetailScreen(),
+              ),
             );
           }
+          // if (settings.name == '/survey') {
+          //   // 1. arguments에서 report 객체 꺼내기
+          //   final report = settings.arguments as SleepReport;
+
+          //   // 2. ViewModel에 주입해서 화면 생성
+          //   return MaterialPageRoute(
+          //     builder: (context) {
+          //       return ChangeNotifierProvider(
+          //         create: (_) => SurveyViewModel(report),
+          //         child: SurveyScreen(),
+          //       );
+          //     },
+          //   );
+          // }
+
           return null;
         },
       ),

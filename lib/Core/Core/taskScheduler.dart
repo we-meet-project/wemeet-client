@@ -13,23 +13,20 @@ class Taskscheduler {
 
   static Future<void> scheduleAllTask() async {
     //수면 보고서
+    await Workmanager().registerPeriodicTask(
+      "dailySleepReportTask",
+      WorkerName.sleepReport,
+      frequency: const Duration(days: 1),
+      initialDelay: _calculateInitialDelay(8),
+      inputData: {'isPeriodic': true}, // 주기 작업 플래그
+    );
+
+    //서버 전송
     // await Workmanager().registerPeriodicTask(
-    //   "dailySleepReportTask",
-    //   WorkerName.sleepReport,
-    //   frequency: const Duration(days: 1),
-    //   initialDelay: _calculateInitialDelay(8),
-    //   inputData: {'isPeriodic': true}, // 주기 작업 플래그
+    //   "serverSendTask",
+    //   "sendReportsToServer",
+    //   frequency: const Duration(hours: 4),
+    //   constraints: Constraints(networkType: NetworkType.unmetered),
     // );
   }
-
-  //서버 전송
-  // await Workmanager().registerPeriodicTask(
-  //   "serverSendTask",
-  //   "sendReportsToServer",
-  //   frequency: const Duration(hours: 4),
-  //   constraints: Constraints(
-  //     networkType: NetworkType.unmetered,
-  //   ),
-  // );
-
 }

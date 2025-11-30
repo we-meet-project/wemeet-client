@@ -3,7 +3,6 @@ import 'package:wemeet_client/Core/Core/workerRegister.dart';
 import 'package:wemeet_client/Core/Manager/workermanager.dart';
 import 'package:wemeet_client/Core/Service/localprofile_service.dart';
 import 'package:wemeet_client/Core/Service/repository_service.dart';
-import 'package:wemeet_client/Core/di/dependency_factory.dart';
 import 'package:wemeet_client/Model/Sleep_report_model.dart';
 
 class MainViewModel with ChangeNotifier {
@@ -20,10 +19,8 @@ class MainViewModel with ChangeNotifier {
   // 가장 최신 리포트 (오늘/어제)
   SleepReport? get latestReport => _reports.isNotEmpty ? _reports.first : null;
 
-  MainViewModel() {
-    final factory = DependencyFactory();
-    _workerManager = WorkerManager(factory: factory);
-  }
+  MainViewModel({required WorkerManager workmanager})
+    : _workerManager = workmanager;
 
   // 1. 데이터 로딩 (화면 진입 시)
   Future<void> loadData() async {

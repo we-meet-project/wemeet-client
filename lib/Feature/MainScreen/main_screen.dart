@@ -193,7 +193,7 @@ class _MainScreenState extends State<MainScreen> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: scoreColor.withOpacity(0.2),
+                  color: scoreColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -219,12 +219,12 @@ class _MainScreenState extends State<MainScreen> {
               ),
               _buildStatItem(
                 "깊은 잠",
-                "${report.deepSleepPercent}%",
+                "${report.deepSleepMinutes}%",
                 Icons.nights_stay,
               ),
               _buildStatItem(
                 "REM",
-                "${report.remSleepPercent}%",
+                "${report.remSleepMinutes}%",
                 Icons.psychology,
               ),
             ],
@@ -257,6 +257,15 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildHistoryItem(BuildContext context, SleepReport report) {
+    Color scoreColor;
+    if (report.sleepScore >= 80) {
+      scoreColor = const Color(0xFF69F0AE); // 부드러운 민트/초록 (GreenAccent 계열)
+    } else if (report.sleepScore >= 50) {
+      scoreColor = const Color(0xFFFFAB40); // 부드러운 오렌지 (OrangeAccent 계열)
+    } else {
+      scoreColor = const Color(0xFFFF5252); // 부드러운 레드 (RedAccent 계열)
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
       child: InkWell(
@@ -273,26 +282,6 @@ class _MainScreenState extends State<MainScreen> {
           ),
           child: Row(
             children: [
-              // 날짜 원형 아이콘
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.deepPurpleAccent.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    DateFormat('d').format(report.date),
-                    style: const TextStyle(
-                      color: Colors.deepPurpleAccent,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
               // 정보
               Expanded(
                 child: Column(
@@ -317,13 +306,99 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 ),
               ),
+
               // 점수
-              Text(
-                "${report.sleepScore.round()}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              // Container(
+              //   width: 45, // 원의 크기
+              //   height: 45,
+              //   decoration: BoxDecoration(
+              //     shape: BoxShape.circle,
+              //     // 점수에 따라 배경색 변경 로직
+              //     color: report.sleepScore >= 80
+              //         ? Colors.greenAccent[700] // 80점 이상: 초록
+              //         : report.sleepScore >= 50
+              //         ? Colors
+              //               .orangeAccent // 50점 이상: 주황
+              //         : Colors.redAccent, // 그 외: 빨강
+              //   ),
+              //   child: Center(
+              //     child: Text(
+              //       "${report.sleepScore.round()}",
+              //       style: const TextStyle(
+              //         color: Colors.white, // 배경이 유색이므로 글자는 흰색
+              //         fontSize: 18,
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // Stack(
+              //   alignment: Alignment.center,
+              //   children: [
+              //     // 1. 뒤에 깔리는 옅은 배경 링
+              //     SizedBox(
+              //       width: 50,
+              //       height: 50,
+              //       child: CircularProgressIndicator(
+              //         value: 1.0, // 전체 원
+              //         strokeWidth: 5,
+              //         valueColor: AlwaysStoppedAnimation<Color>(
+              //           Colors.grey.withOpacity(0.2), // 흐릿한 회색
+              //         ),
+              //       ),
+              //     ),
+              //     // 2. 점수만큼 차오르는 전경 링
+              //     SizedBox(
+              //       width: 50,
+              //       height: 50,
+              //       child: CircularProgressIndicator(
+              //         value: report.sleepScore / 100, // 0.0 ~ 1.0 사이 값
+              //         strokeWidth: 5,
+              //         strokeCap: StrokeCap.round, // 끝부분 둥글게 처리 (고급짐 UP)
+              //         valueColor: AlwaysStoppedAnimation<Color>(
+              //           // 점수에 따른 색상 로직
+              //           report.sleepScore >= 80
+              //               ? Colors.greenAccent
+              //               : report.sleepScore >= 50
+              //               ? Colors.orangeAccent
+              //               : Colors.redAccent,
+              //         ),
+              //       ),
+              //     ),
+              //     // 3. 중앙 점수 텍스트
+              //     Text(
+              //       "${report.sleepScore.round()}",
+              //       style: const TextStyle(
+              //         color: Colors.white,
+              //         fontWeight: FontWeight.bold,
+              //         fontSize: 16,
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  // 배경: 해당 색상을 아주 옅게(15%) 깔아줍니다.
+                  color: scoreColor.withValues(alpha: .15),
+                  shape: BoxShape.circle,
+                  // 테두리: 살짝 더 진하게 주어 경계를 깔끔하게 만듭니다. (선택사항)
+                  border: Border.all(
+                    color: scoreColor.withValues(alpha: .3),
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    "${report.sleepScore.round()}",
+                    style: TextStyle(
+                      color: scoreColor, // 글자는 선명한 색상 그대로 사용
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      // 그림자 제거: 깔끔함을 위해 그림자는 뺍니다.
+                    ),
+                  ),
                 ),
               ),
             ],

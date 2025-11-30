@@ -24,12 +24,32 @@ class _SplashScreenState extends State<SplashScreen> {
     final viewModel = context.read<SplashViewModel>();
 
     // 다음 경로 받아오기
-    final String nextRoute = await viewModel.checkAppStatus();
+    await viewModel.checkAppStatus();
 
     if (!mounted) return;
 
-    // 화면 이동 (뒤로가기 불가능하게 교체)
-    Navigator.pushReplacementNamed(context, nextRoute);
+    switch (viewModel.status) {
+      case SplashStatus.goHome:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case SplashStatus.goLogin:
+        Navigator.pushReplacementNamed(context, '/login');
+        break;
+      case SplashStatus.goPermission:
+        Navigator.pushReplacementNamed(
+          context,
+          '/permission',
+          arguments: viewModel.deniedPermissions,
+        );
+        break;
+      case SplashStatus.error:
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('초기화 중 오류가 발생했습니다.')));
+        break;
+      default:
+        break;
+    }
   }
 
   @override
@@ -44,8 +64,8 @@ class _SplashScreenState extends State<SplashScreen> {
             // 앱 로고 (아이콘)
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.deepPurpleAccent.withOpacity(0.1),
+              decoration: const BoxDecoration(
+                color: Colors.deepPurpleAccent,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -58,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
             // 앱 이름
             const Text(
-              "Sleep Report",
+              "Good Sleeper",
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,

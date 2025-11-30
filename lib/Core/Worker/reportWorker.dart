@@ -30,31 +30,31 @@ class ReportWorker implements IWorker {
     DateTime endTime,
   ) async {
     //데이터 가져오기
-    List<HealthDataPoint> data = await _healthService.getSleepData(
+    List<HealthDataPoint> rawData = await _healthService.getSleepData(
       startTime: startTime,
       endTime: endTime,
       type: types,
     );
 
     //가져온 데이터 확인
-    if (data.isEmpty) {
+    if (rawData.isEmpty) {
       print('API 호출 성공. 하지만 해당 기간에 수면 데이터가 없습니다.');
       return null;
     }
+
+    List<HealthDataPoint> data = _findMainSleepSession(rawData);
+
+    if (data.isEmpty) return null;
 
     Duration totalSleepDuration = Duration.zero;
     Duration deepSleepDuration = Duration.zero;
     Duration remSleepDuration = Duration.zero;
     Duration lightSleepDuration = Duration.zero;
-    DateTime? sessionStartTime; // 실제 수면 시작 시간
+    Duration awakeSleepDuration = Duration.zero;
 
-    for (var point in data) {
-      //가장 이른 시작 시간을 수면 세션의 시작 시간으로 간주
-      if (sessionStartTime == null ||
-          point.dateFrom.isBefore(sessionStartTime)) {
-        sessionStartTime = point.dateFrom;
-      }
+    DateTime sessionStartTime = data.first.dateFrom;
 
+    for (var point in rawData) {
       final duration = point.dateTo.difference(point.dateFrom);
 
       switch (point.type) {
@@ -67,10 +67,8 @@ class ReportWorker implements IWorker {
         case HealthDataType.SLEEP_LIGHT:
           lightSleepDuration += duration;
           break;
-        // SLEEP_ASLEEP, SLEEP_AWAKE는 총 수면 시간 계산 시
-        // (Deep + REM + Light)의 합계를 사용할 것이므로 여기서는 집계하지 않음.
-        case HealthDataType.SLEEP_ASLEEP:
         case HealthDataType.SLEEP_AWAKE:
+          awakeSleepDuration += duration;
         default:
           break;
       }
@@ -87,25 +85,24 @@ class ReportWorker implements IWorker {
 
     // 2. 백분율 계산 (총 수면 시간 대비)
     final totalMinutes = totalSleepDuration.inMinutes;
-    final int deepPercent = ((deepSleepDuration.inMinutes / totalMinutes) * 100)
-        .round();
-    final int remPercent = ((remSleepDuration.inMinutes / totalMinutes) * 100)
-        .round();
 
     // 3. 수면 점수 계산 (임시)
     double finalSleepScore = _calculateSleepScore(
       totalSleepDuration,
-      deepPercent,
-      remPercent,
+      ((deepSleepDuration.inMinutes / totalMinutes) * 100).round(),
+      ((remSleepDuration.inMinutes / totalMinutes) * 100).round(),
     );
 
     final report = SleepReport(
-      date: sessionStartTime ?? startTime,
+      date: sessionStartTime,
       sleepScore: finalSleepScore,
       durationInMinutes: totalSleepDuration.inMinutes,
-      deepSleepPercent: deepPercent,
-      remSleepPercent: remPercent,
+      deepSleepMinutes: deepSleepDuration.inMinutes,
+      remSleepMinutes: remSleepDuration.inMinutes,
+      lightSleepMinutes: lightSleepDuration.inMinutes,
+      awakeSleepMinutes: awakeSleepDuration.inMinutes,
     );
+
     return report;
   }
 
@@ -158,6 +155,58 @@ class ReportWorker implements IWorker {
     return (durationScore + deepScore + remScore).clamp(0.0, 100.0);
   }
 
+  List<HealthDataPoint> _findMainSleepSession(List<HealthDataPoint> data) {
+    if (data.isEmpty) return [];
+
+    //시간순 정렬
+    data.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
+
+    List<List<HealthDataPoint>> sessions = [];
+    List<HealthDataPoint> currentSession = [];
+
+    //세션 그룹화
+    //수면데이터 사이의 간격 2시간 미만이면 하나의 수면으로 취급
+    const int gapThresholdHours = 2;
+
+    for (var point in data) {
+      if (currentSession.isEmpty) {
+        currentSession.add(point);
+        continue;
+      }
+
+      final lastPoint = currentSession.last;
+
+      //현재 포인트 시작시간 - 이전 포인트 종료시간
+      final gap = point.dateFrom.difference(lastPoint.dateTo).inHours;
+
+      //같은 수면
+      if (gap < gapThresholdHours) {
+        currentSession.add(point);
+      } else {
+        sessions.add(List.from(currentSession));
+        currentSession = [point];
+      }
+    }
+    if (currentSession.isNotEmpty) sessions.add(currentSession);
+
+    //가장 긴 수면시간을 가진 세션 찾기
+    List<HealthDataPoint> longestSession = [];
+    Duration maxDuration = Duration.zero;
+
+    for (var session in sessions) {
+      Duration sessionDuration = session.fold(
+        Duration.zero,
+        (prev, element) => prev + element.dateTo.difference(element.dateFrom),
+      );
+
+      if (sessionDuration > maxDuration) {
+        maxDuration = sessionDuration;
+        longestSession = session;
+      }
+    }
+    return longestSession;
+  }
+
   @override
   Future<bool> run(Map<String, dynamic>? inputData) async {
     final bool isPeriodic = inputData?['isPeriodic'] as bool? ?? false;
@@ -167,6 +216,7 @@ class ReportWorker implements IWorker {
     final DateTime endTime; // 데이터 조회 끝
 
     if (isPeriodic) {
+      print("백드라운드 작업시작 제발 이거 떳으면 좋겠다!!!!!!!!!!!!!");
       final now = DateTime.now(); // 8:00 AM
       final yesterday = now.subtract(const Duration(days: 1));
 

@@ -24,7 +24,7 @@ class RepositoryService {
     _isar = await Isar.open(
       [SleepReportSchema],
       directory: dir.path,
-      inspector: true, // 개발 중에 DB 확인용 (배포 시 false 권장)
+      inspector: false, // 개발 중에 DB 확인용 (배포 시 false 권장)
     );
   }
 
@@ -57,7 +57,7 @@ class RepositoryService {
     return await _isar.sleepReports.filter().isSentEqualTo(false).findAll();
   }
 
-  // [최적화] 리포트 전송 완료 처리 (Batch update)
+  // 리포트 전송 완료 처리 (Batch update)
   Future<void> markReportAsSent(List<SleepReport> reports) async {
     if (reports.isEmpty) return;
 
@@ -71,7 +71,7 @@ class RepositoryService {
     });
   }
 
-  // [추가됨] 모든 데이터 조회 (MainViewModel용)
+  // 모든 데이터 조회 (MainViewModel용)
   Future<List<SleepReport>> getAllData() async {
     // 날짜 내림차순(최신순)으로 가져오기
     return await _isar.sleepReports.where().sortByDateDesc().findAll();
@@ -83,27 +83,42 @@ class RepositoryService {
     final now = DateTime.now();
 
     for (int i = 0; i < 7; i++) {
-      // 1. 날짜: 오늘로부터 i일 전
+      // 1. 날짜: 오늘로부터 i일 전 (최신순 정렬을 원하면 0부터, 과거부터면 reversed)
       final date = now.subtract(Duration(days: i));
 
-      // 2. 수면 시간: 4시간(240분) ~ 10시간(600분) 사이 랜덤
-      final durationMinutes = 240 + random.nextInt(360);
+      // 2. 수면 점수: 50 ~ 100점 사이
+      final double score = 50.0 + random.nextInt(51); // 50 ~ 100
 
-      // 3. 수면 단계 비율 (대충 합쳐서 100% 근처가 되게 랜덤 생성)
-      final deep = 10 + random.nextInt(15); // 10~25%
-      final rem = 15 + random.nextInt(15); // 15~30%
-      // (나머지는 Light로 치지만 모델에는 필드가 없으니 생략하거나 계산)
+      // 3. 전체 수면 시간: 4시간(240분) ~ 9시간(540분) 사이 랜덤
+      final int totalMinutes = 240 + random.nextInt(301);
 
-      // 4. 수면 점수: 50 ~ 100점 사이
-      final score = 50.0 + random.nextInt(50);
+      // 4. 수면 단계별 시간 계산 (비율로 쪼개기)
+      // - 깊은 잠: 전체의 15% ~ 25%
+      // - REM 수면: 전체의 20% ~ 25%
+      // - 깬 시간: 전체의 2% ~ 5%
+      // - 얕은 잠: 나머지 전체
+
+      final double deepRatio = 0.15 + (random.nextInt(11) / 100); // 0.15~0.25
+      final double remRatio = 0.20 + (random.nextInt(6) / 100); // 0.20~0.25
+      final double awakeRatio = 0.02 + (random.nextInt(4) / 100); // 0.02~0.05
+
+      final int deepMinutes = (totalMinutes * deepRatio).toInt();
+      final int remMinutes = (totalMinutes * remRatio).toInt();
+      final int awakeMinutes = (totalMinutes * awakeRatio).toInt();
+
+      // *중요* 얕은 잠은 나머지 시간으로 채워서 총합을 맞춤
+      final int lightMinutes =
+          totalMinutes - (deepMinutes + remMinutes + awakeMinutes);
 
       final report = SleepReport(
         date: date,
         sleepScore: score,
-        durationInMinutes: durationMinutes.toInt(),
-        deepSleepPercent: deep.toInt(),
-        remSleepPercent: rem.toInt(),
-        isSent: false, // 전송 테스트도 해야 하니 false로
+        durationInMinutes: totalMinutes,
+        deepSleepMinutes: deepMinutes,
+        remSleepMinutes: remMinutes,
+        lightSleepMinutes: lightMinutes,
+        awakeSleepMinutes: awakeMinutes,
+        isSent: false, // 모델에 isSent 필드가 있다면 주석 해제
       );
 
       dummies.add(report);

@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wemeet_client/Feature/Permission/permission_view_model.dart';
+import 'package:wemeet_client/Core/enums.dart';
 // (PermissionViewModel import)
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+// 필요한 다른 import 들 (PermissionStatus, PermissionTarget 등)
 
 class PermissionScreen extends StatefulWidget {
   const PermissionScreen({super.key});
@@ -13,14 +18,18 @@ class PermissionScreen extends StatefulWidget {
 
 class _PermissionScreenState extends State<PermissionScreen>
     with WidgetsBindingObserver {
+  // 권한 타겟 정의 (상수로 관리하거나 별도 파일에 있는 값을 사용하세요)
+  static const String targetNotification = PermissionTarget.notification;
+  static const String targetSleep = PermissionTarget.sleep;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // 화면 진입 시 체크
+    // 화면 진입 시 전체 권한 체크
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PermissionViewModel>().checkPermissions();
+      _checkAllPermissions();
     });
   }
 
@@ -35,11 +44,24 @@ class _PermissionScreenState extends State<PermissionScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       print("View: 앱 복귀 감지 -> 권한 재확인");
-      context.read<PermissionViewModel>().checkPermissions();
+      _checkAllPermissions();
     }
   }
 
-  // [핵심] 권한 요청 핸들러
+  // 모든 필수 권한 상태 확인
+  void _checkAllPermissions() {
+    final viewModel = context.read<PermissionViewModel>();
+
+    // 알림 & 활동 (Standard 카테고리 가정)
+    viewModel.checkPermission(
+      category: PermissionCategory.standard,
+      targets: [targetNotification],
+    );
+
+    // 건강 (Health 카테고리 가정)
+    viewModel.checkPermission(category: 'health', targets: [targetSleep]);
+  }
+
   Future<void> _handlePermissionTap(
     String target,
     String category,
@@ -48,21 +70,21 @@ class _PermissionScreenState extends State<PermissionScreen>
     print("View: $name 카드 클릭됨");
     final viewModel = context.read<PermissionViewModel>();
 
-    // 1. 요청 및 결과 대기
-    final PermissionStatus status = await viewModel.requestPermission(
-      target,
-      category,
-    );
+    // 1. 요청 (ViewModel이 상태를 업데이트할 때까지 대기)
+    // 리팩토링된 VM은 void를 반환하므로 await만 수행
+    await viewModel.requestPermission(category: category, targets: [target]);
 
     if (!mounted) return;
 
-    // 2. 결과 처리
+    // 2. 결과 처리 (업데이트된 ViewModel의 Map에서 상태 조회)
+    final PermissionStatus status =
+        viewModel.permissionStatuses[target] ?? PermissionStatus.denied;
+
     if (status.isPermanentlyDenied) {
       print("View: 영구 거절 감지 -> 설정 다이얼로그 표시");
       _showSettingsDialog(name);
     } else if (status.isDenied) {
-      print("View: 단순 거절됨 (시스템 팝업 닫힘)");
-      // 필요한 경우 스낵바 표시
+      print("View: 단순 거절됨");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("$name 권한을 허용해주세요."),
@@ -70,7 +92,7 @@ class _PermissionScreenState extends State<PermissionScreen>
         ),
       );
     } else if (status.isGranted) {
-      print("View: 권한 허용됨!");
+      print("View: $name 권한 허용됨!");
     }
   }
 
@@ -106,6 +128,11 @@ class _PermissionScreenState extends State<PermissionScreen>
 
   void _onContinue() {
     Navigator.pushReplacementNamed(context, '/home');
+  }
+
+  // Map에서 상태를 안전하게 가져오는 헬퍼 함수
+  bool _isGranted(PermissionViewModel vm, String target) {
+    return vm.permissionStatuses[target]?.isGranted ?? false;
   }
 
   @override
@@ -149,25 +176,12 @@ class _PermissionScreenState extends State<PermissionScreen>
                           title: "알림 (필수)",
                           description: "리포트 알림 수신",
                           icon: Icons.notifications,
-                          isGranted: viewModel.isNotificationGranted,
+                          // Map에서 상태 조회
+                          isGranted: _isGranted(viewModel, targetNotification),
                           onTap: () => _handlePermissionTap(
-                            'notification',
-                            'standard',
+                            targetNotification,
+                            PermissionCategory.standard,
                             '알림',
-                          ),
-                          cardColor: cardColor,
-                          primaryColor: primaryColor,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildPermissionCard(
-                          title: "신체 활동 (필수)",
-                          description: "수면 데이터 분석",
-                          icon: Icons.directions_walk,
-                          isGranted: viewModel.isActivityGranted,
-                          onTap: () => _handlePermissionTap(
-                            'activity',
-                            'standard',
-                            '신체 활동',
                           ),
                           cardColor: cardColor,
                           primaryColor: primaryColor,
@@ -178,9 +192,12 @@ class _PermissionScreenState extends State<PermissionScreen>
                           title: "건강 정보 (필수)",
                           description: "수면 데이터 분석",
                           icon: Icons.health_and_safety,
-                          isGranted: viewModel.isSleepGranted,
-                          onTap: () =>
-                              _handlePermissionTap('sleep', 'health', '건강 정보'),
+                          isGranted: _isGranted(viewModel, targetSleep),
+                          onTap: () => _handlePermissionTap(
+                            targetSleep,
+                            'health',
+                            '건강 정보',
+                          ),
                           cardColor: cardColor,
                           primaryColor: primaryColor,
                         ),
@@ -193,7 +210,9 @@ class _PermissionScreenState extends State<PermissionScreen>
               // 시작하기 버튼
               Consumer<PermissionViewModel>(
                 builder: (context, viewModel, child) {
+                  // ViewModel의 getter 사용
                   final isReady = viewModel.isAllGranted;
+
                   return SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -226,7 +245,7 @@ class _PermissionScreenState extends State<PermissionScreen>
     );
   }
 
-  // 카드 위젯
+  // 카드 위젯 (변경 없음)
   Widget _buildPermissionCard({
     required String title,
     required String description,
