@@ -8,7 +8,6 @@ import 'package:goodsleeper/Model/Sleep_report_model.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 
-// Container 클래스 import 필요
 
 // [중요] 이 어노테이션을 달면 build_runner가 가짜 클래스(Mock...)를 자동으로 만들어줍니다.
 @GenerateMocks([
