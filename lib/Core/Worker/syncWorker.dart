@@ -1,9 +1,9 @@
-import 'package:wemeet_client/Core/Service/localprofile_service.dart';
-import 'package:wemeet_client/Core/Service/repository_service.dart';
-import 'package:wemeet_client/Core/Service/database_service.dart';
-import 'package:wemeet_client/Core/Worker/worker.dart';
-import 'package:wemeet_client/Core/di/dependency_factory.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Core/Service/localprofile_service.dart';
+import 'package:goodsleeper/Core/Service/repository_service.dart';
+import 'package:goodsleeper/Core/Service/database_service.dart';
+import 'package:goodsleeper/Core/Worker/worker.dart';
+import 'package:goodsleeper/Core/di/dependency_factory.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 import '../di/container.dart';
 
 class Syncworker implements IWorker {
@@ -21,9 +21,10 @@ class Syncworker implements IWorker {
     try {
       // 1. 사용자 정보 확인
       final String? userId = _profileService.getUserId();
+      final String? companyId = _profileService.getUserCompany();
       final String? groupId = _profileService.getUserGroup();
 
-      if (userId == null || groupId == null) {
+      if (userId == null || groupId == null || companyId == null) {
         return true; // 재시도 방지를 위해 true 리턴 (로그인해야 가능하므로)
       }
 
@@ -40,6 +41,7 @@ class Syncworker implements IWorker {
       await _syncService.sendSleepScoresToGroup(
         reports: unsentReports,
         userId: userId,
+        companyId: companyId,
         groupId: groupId,
       );
 

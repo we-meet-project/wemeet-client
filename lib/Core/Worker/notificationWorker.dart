@@ -1,4 +1,4 @@
-import 'package:wemeet_client/Core/Service/notification_service.dart';
+import 'package:goodsleeper/Core/Service/notification_service.dart';
 import '../Worker/worker.dart';
 import '../di/container.dart';
 import '../di/dependency_factory.dart';

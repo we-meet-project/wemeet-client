@@ -1,0 +1,25 @@
+name: Core Logic CI
+
+# 트리거 설정: Core 로직 변경 시에만 작동
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'lib/Core/**'
+      - 'test/Core/**'
+      - 'pubspec.yaml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'lib/Core/**'
+      - 'test/Core/**'
+      - 'pubspec.yaml'
+
+jobs:
+  # 중앙 레포지토리의 워크플로우 호출
+  call-unit-test:
+    # 문법: {조직명}/{중앙레포명}/.github/workflows/{파일명}@{태그or브랜치}
+    uses: we-meet-project/CICD-template/.github/workflows/flutter-unit-test.yml@main
+    with:
+      test-path: 'test/Core'      # Core 폴더만 테스트하라고 전달
+      run-build-runner: true      # Mockito 쓰니까 생성해달라고 요청

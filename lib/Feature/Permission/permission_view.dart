@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:wemeet_client/Feature/Permission/permission_view_model.dart';
-import 'package:wemeet_client/Core/enums.dart';
+import 'package:goodsleeper/Feature/Permission/permission_view_model.dart';
+import 'package:goodsleeper/Core/enums.dart';
 // (PermissionViewModel import)
 
 import 'package:flutter/material.dart';

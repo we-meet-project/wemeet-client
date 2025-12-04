@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wemeet_client/Core/Service/repository_service.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Core/Service/repository_service.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 
 class SurveyViewModel with ChangeNotifier {
   final SleepReport report;

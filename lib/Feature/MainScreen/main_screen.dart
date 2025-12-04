@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:wemeet_client/Feature/MainScreen/main_view_model.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Feature/MainScreen/main_view_model.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 // (MainViewModel import)
 
 class MainScreen extends StatefulWidget {
@@ -219,12 +219,12 @@ class _MainScreenState extends State<MainScreen> {
               ),
               _buildStatItem(
                 "깊은 잠",
-                "${report.deepSleepMinutes}%",
+                "${report.percentDeep.toInt()}%",
                 Icons.nights_stay,
               ),
               _buildStatItem(
                 "REM",
-                "${report.remSleepMinutes}%",
+                "${report.percentRem.toInt()}%",
                 Icons.psychology,
               ),
             ],

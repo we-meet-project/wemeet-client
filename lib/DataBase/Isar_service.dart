@@ -1,6 +1,6 @@
 // import 'package:isar/isar.dart';
 // import 'package:path_provider/path_provider.dart';
-// import 'package:wemeet_client/DataBase/sleep_schemas.dart';
+// import 'package:goodsleeper/DataBase/sleep_schemas.dart';
 
 // class IsarService {
 //   static late final Isar isar;

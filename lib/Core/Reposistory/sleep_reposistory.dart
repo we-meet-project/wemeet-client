@@ -1,5 +1,5 @@
 // import 'package:health/health.dart';
-// import 'package:wemeet_client/Core/Service/health_service.dart'; // health 패키지
+// import 'package:goodsleeper/Core/Service/health_service.dart'; // health 패키지
 
 // class SleepRepository {
 //   final HealthDataService _healthService;

@@ -1,6 +1,6 @@
-import 'package:wemeet_client/Core/Worker/authWorker.dart';
-import 'package:wemeet_client/Core/Worker/permissionWorker.dart';
-import 'package:wemeet_client/Core/Worker/syncWorker.dart';
+import 'package:goodsleeper/Core/Worker/authWorker.dart';
+import 'package:goodsleeper/Core/Worker/permissionWorker.dart';
+import 'package:goodsleeper/Core/Worker/syncWorker.dart';
 
 import '../di/dependency_factory.dart';
 import '../Worker/worker.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 // (SleepReport 모델 import)
 
 class ReportViewModel with ChangeNotifier {

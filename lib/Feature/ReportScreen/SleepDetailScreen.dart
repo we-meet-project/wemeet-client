@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:wemeet_client/Feature/ReportScreen/report_view_model.dart';
-import 'package:wemeet_client/Feature/Survey/survey_view_model.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Feature/ReportScreen/report_view_model.dart';
+import 'package:goodsleeper/Feature/Survey/survey_view_model.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 
 class SleepDetailScreen extends StatefulWidget {
   const SleepDetailScreen({super.key});

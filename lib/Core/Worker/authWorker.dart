@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:wemeet_client/Core/Service/database_service.dart';
-import 'package:wemeet_client/Core/Service/localprofile_service.dart';
-import 'package:wemeet_client/Core/Worker/worker.dart';
-import 'package:wemeet_client/Core/di/container.dart';
-import 'package:wemeet_client/Core/di/dependency_factory.dart';
-import 'package:wemeet_client/Core/enums.dart';
+import 'package:goodsleeper/Core/Service/database_service.dart';
+import 'package:goodsleeper/Core/Service/localprofile_service.dart';
+import 'package:goodsleeper/Core/Worker/worker.dart';
+import 'package:goodsleeper/Core/di/container.dart';
+import 'package:goodsleeper/Core/di/dependency_factory.dart';
+import 'package:goodsleeper/Core/enums.dart';
 
 class Authworker implements IWorker {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -58,26 +58,29 @@ class Authworker implements IWorker {
     if (user == null || user.email == null) return AuthStatus.error;
 
     final String email = user.email!;
-
+    final String? companyId = await _dataBaseService.getCompanyIdFromAllowList(
+      email,
+    );
     final String? groupId = await _dataBaseService.getGroupIdFromAllowList(
       email,
     );
 
     print("--- [Step 4] DB 조회 결과: $groupId ---");
 
-    if (groupId == null) {
+    if (groupId == null || companyId == null) {
       print("AuthService: 허용되지 않은 이메일입니다. $email");
       await _signOut(); // 즉시 로그아웃 처리
       return AuthStatus.notAllowed;
     }
 
     print("AuthService: 허용된 사용자입니다. Group: $groupId");
-    await _dataBaseService.saveUserProfile(user.uid, groupId);
+    await _dataBaseService.saveUserProfile(user.uid, companyId, groupId);
 
     // 5. 로컬(SharedPreferences)에 저장
     await _localprofileService.saveUserProfile(
       userId: user.uid,
       email: email,
+      companyId: companyId,
       groupId: groupId,
     );
     return AuthStatus.loggedIn; // 홈 화면으로

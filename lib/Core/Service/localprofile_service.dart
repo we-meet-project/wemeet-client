@@ -10,6 +10,7 @@ class LocalprofileService {
   late final SharedPreferences _preferences;
 
   static const String _kUserId = 'user_id';
+  static const String _kCompanyId = 'company_id';
   static const String _kGroupId = 'user_group_id';
   static const String _kUserEmail = 'user_email';
 
@@ -20,17 +21,23 @@ class LocalprofileService {
   Future<void> saveUserProfile({
     required String userId,
     required String email,
+    required String companyId,
     required String groupId,
   }) async {
     await Future.wait([
       _preferences.setString(_kUserId, userId),
       _preferences.setString(_kUserEmail, email),
+      _preferences.setString(_kCompanyId, companyId),
       _preferences.setString(_kGroupId, groupId),
     ]);
   }
 
   String? getUserGroup() {
     return _preferences.getString(_kGroupId);
+  }
+
+  String? getUserCompany() {
+    return _preferences.getString(_kCompanyId);
   }
 
   String? getUserId() {

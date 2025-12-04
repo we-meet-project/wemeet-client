@@ -11,9 +11,12 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  FlutterLocalNotificationsPlugin get flutterLocalNotificationsPlugin =>
+      _flutterLocalNotificationsPlugin;
+
   InitializationSettings _settingInit() {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
+        AndroidInitializationSettings('logo');
 
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);

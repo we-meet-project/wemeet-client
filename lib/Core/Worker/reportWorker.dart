@@ -1,12 +1,12 @@
 import 'dart:math';
 
 import 'package:health/health.dart';
-import 'package:wemeet_client/Core/Service/Permission_service.dart';
-import 'package:wemeet_client/Core/Service/notification_service.dart';
-import 'package:wemeet_client/Core/Service/repository_service.dart';
-import 'package:wemeet_client/Core/enums.dart';
+import 'package:goodsleeper/Core/Service/Permission_service.dart';
+import 'package:goodsleeper/Core/Service/notification_service.dart';
+import 'package:goodsleeper/Core/Service/repository_service.dart';
+import 'package:goodsleeper/Core/enums.dart';
 
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 import '../Worker/worker.dart';
 import '../Service/health_service.dart';
 import '../di/dependency_factory.dart';
@@ -39,7 +39,6 @@ class ReportWorker implements IWorker {
     //가져온 데이터 확인
     if (rawData.isEmpty) {
       print('API 호출 성공. 하지만 해당 기간에 수면 데이터가 없습니다.');
-      return null;
     }
 
     List<HealthDataPoint> data = _findMainSleepSession(rawData);
@@ -257,6 +256,16 @@ class ReportWorker implements IWorker {
       //데이터 없거나, 권한 이슈 처리
       if (report == null) {
         print('HealthWorker: 생성할 리포트가 없습니다 (데이터 없음 등).');
+
+        if (isPeriodic) {
+          await _notificationService.showNotification(
+            id: targetDate.hashCode, // 같은 날짜 ID 사용
+            title: '수면 데이터 동기화 필요 ☁️',
+            body: '아직 수면 데이터가 도착하지 않았어요. 탭해서 리포트를 생성해보세요!',
+            payload: '/home', // 특수 페이로드 전달
+          );
+        }
+
         return true;
       }
 
@@ -269,12 +278,13 @@ class ReportWorker implements IWorker {
           id: report.date.hashCode,
           title: '수면 리포트가 도착했어요! 😴',
           body: '어젯밤 수면 리포트를 탭해서 확인하세요!',
-          payload: report.id.toString(),
+          payload: '/report?reportId=${report.id.toString()}',
         );
       }
 
       return true;
     } catch (e) {
+      print('reportWorker : $e');
       return false;
     }
   }

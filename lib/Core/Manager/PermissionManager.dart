@@ -1,5 +1,5 @@
 // import 'package:permission_handler/permission_handler.dart';
-// import 'package:wemeet_client/Core/Core/workerPermissionRegister.dart';
+// import 'package:goodsleeper/Core/Core/workerPermissionRegister.dart';
 
 // class Permissionmanager {
 //   //모든 권한의 '현재' 상태를 확인하는 메서드

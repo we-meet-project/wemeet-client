@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wemeet_client/Core/Core/workerRegister.dart';
-import 'package:wemeet_client/Core/Manager/workermanager.dart';
-import 'package:wemeet_client/Core/enums.dart';
+import 'package:goodsleeper/Core/Core/workerRegister.dart';
+import 'package:goodsleeper/Core/Manager/workermanager.dart';
+import 'package:goodsleeper/Core/enums.dart';
 
 class PermissionViewModel with ChangeNotifier {
   final WorkerManager _workerManager;

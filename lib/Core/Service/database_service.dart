@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 
 class DataBaseService {
   DataBaseService._() {
@@ -10,6 +10,26 @@ class DataBaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<String?> getGroupIdFromAllowList(String emailKey) async {
+    try {
+      final docSnapshot = await _firestore
+          .collection('allowEmails')
+          .doc(emailKey)
+          .get();
+
+      if (docSnapshot.exists) {
+        print("groupId 조회");
+        final data = docSnapshot.data();
+        return data?['groupId'] as String?;
+      }
+
+      return null;
+    } catch (e) {
+      print("Firestore Error: $e");
+      return null;
+    }
+  }
+
+  Future<String?> getCompanyIdFromAllowList(String emailKey) async {
     try {
       final docSnapshot = await _firestore
           .collection('allowEmails')
@@ -29,9 +49,14 @@ class DataBaseService {
     }
   }
 
-  Future<void> saveUserProfile(String userId, String groupId) async {
+  Future<void> saveUserProfile(
+    String userId,
+    String companyId,
+    String groupId,
+  ) async {
     await _firestore.collection('allowEmails').doc(userId).set({
       'userId': userId,
+      'companyId': companyId,
       'groupId': groupId,
     }, SetOptions(merge: true));
   }
@@ -40,6 +65,7 @@ class DataBaseService {
   Future<void> sendSleepScoresToGroup({
     required List<SleepReport> reports,
     required String userId,
+    required String companyId,
     required String groupId,
   }) async {
     if (reports.isEmpty) return;
@@ -54,6 +80,8 @@ class DataBaseService {
       // 3. 저장 경로 참조 (Reference) 생성
       // 구조: 컬렉션(groups) -> 문서(groupId) -> 서브컬렉션(sleepScores) -> 문서(uniqueKey)
       final DocumentReference docRef = _firestore
+          .collection('companies')
+          .doc(companyId)
           .collection('groups')
           .doc(groupId)
           .collection('sleepScores')

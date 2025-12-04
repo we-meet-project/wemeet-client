@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wemeet_client/Core/Service/Permission_service.dart';
-import 'package:wemeet_client/Core/Worker/worker.dart';
-import 'package:wemeet_client/Core/di/container.dart';
-import 'package:wemeet_client/Core/di/dependency_factory.dart';
-import 'package:wemeet_client/Core/enums.dart';
+import 'package:goodsleeper/Core/Service/Permission_service.dart';
+import 'package:goodsleeper/Core/Worker/worker.dart';
+import 'package:goodsleeper/Core/di/container.dart';
+import 'package:goodsleeper/Core/di/dependency_factory.dart';
+import 'package:goodsleeper/Core/enums.dart';
 
 class Permissionworker implements IWorker {
   final HealthPermissionService _healthPermissionService;

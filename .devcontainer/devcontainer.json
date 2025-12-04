@@ -24,7 +24,7 @@
 		// 컨테이너 내 ADB가 호스트의 ADB 서버에 연결하도록 지시
 		"ANDROID_ADB_SERVER_ADDRESS": "host.docker.internal",
 		//"ANDROID_ADB_SERVER_ADDRESS": "127.0.0.1",
-		// ADB 서버의 기본 포트 5037을 사용합니다.
+		// ADB 서버의 기본 포트 5037을 사용.
 		"ANDROID_ADB_SERVER_PORT": "5037"
 	},
 	"postCreateCommand": "bash -c \"cp pubspecs/legacy.yaml pubspec.yaml ; sudo curl -sL https://firebase.tools | bash ; flutter pub global activate flutterfire_cli\"",

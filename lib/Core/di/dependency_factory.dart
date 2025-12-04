@@ -1,7 +1,7 @@
-import 'package:wemeet_client/Core/Service/Permission_service.dart';
-import 'package:wemeet_client/Core/Service/database_service.dart';
-import 'package:wemeet_client/Core/Service/localprofile_service.dart';
-import 'package:wemeet_client/Core/Service/repository_service.dart';
+import 'package:goodsleeper/Core/Service/Permission_service.dart';
+import 'package:goodsleeper/Core/Service/database_service.dart';
+import 'package:goodsleeper/Core/Service/localprofile_service.dart';
+import 'package:goodsleeper/Core/Service/repository_service.dart';
 
 import '../Service/health_service.dart';
 import '../Service/notification_service.dart';

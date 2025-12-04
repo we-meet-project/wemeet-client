@@ -11,8 +11,21 @@ class HealthPermissionService {
 
   //Google 엑세스 요청 메서드(포그라운드 전용)
   Future<bool> requestHealthPermission(List<HealthDataType> type) async {
+    final List<HealthDataType> allTypes = [...type, ...type];
+
+    // 2. 각 타입에 매칭되는 권한 리스트를 생성합니다 (앞쪽 절반은 READ, 뒤쪽 절반은 WRITE)
+    final List<HealthDataAccess> allPermissions = [
+      // 모든 타입에 대해 READ 권한 할당
+      ...type.map((e) => HealthDataAccess.READ),
+      // 모든 타입에 대해 WRITE 권한 할당
+      ...type.map((e) => HealthDataAccess.WRITE),
+    ];
+
     try {
-      return await _health.requestAuthorization(type);
+      return await _health.requestAuthorization(
+        allTypes,
+        permissions: allPermissions,
+      );
     } catch (e) {
       print("Health Request Error: $e");
       return false;
@@ -21,8 +34,21 @@ class HealthPermissionService {
 
   //권한확인
   Future<bool> checkHealthPermission(List<HealthDataType> type) async {
+    final List<HealthDataType> allTypes = [...type, ...type];
+
+    // 2. 각 타입에 매칭되는 권한 리스트를 생성합니다 (앞쪽 절반은 READ, 뒤쪽 절반은 WRITE)
+    final List<HealthDataAccess> allPermissions = [
+      // 모든 타입에 대해 READ 권한 할당
+      ...type.map((e) => HealthDataAccess.READ),
+      // 모든 타입에 대해 WRITE 권한 할당
+      ...type.map((e) => HealthDataAccess.WRITE),
+    ];
+
     try {
-      bool? hasPermission = await _health.hasPermissions(type);
+      bool? hasPermission = await _health.hasPermissions(
+        allTypes,
+        permissions: allPermissions,
+      );
       return hasPermission ?? false;
     } catch (e) {
       print("Health Check Error: $e");

@@ -1,8 +1,9 @@
 import 'dart:math';
 
+import 'package:goodsleeper/Core/Service/health_service.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 
 class RepositoryService {
   RepositoryService._() {
@@ -50,6 +51,13 @@ class RepositoryService {
         .dateGreaterThan(startOfDay, include: true)
         .dateLessThan(startOfNextDay)
         .findFirst();
+  }
+
+  //ID 기준으로 조회
+  Future<SleepReport?> getSleepReportById(int id) async {
+    return await _isar.sleepReports.get(
+      id,
+    ); // Isar는 .get(id)을 사용하여 Primary Key로 조회합니다.
   }
 
   // 전송 안 된 리포트 조회
@@ -133,11 +141,68 @@ class RepositoryService {
     print("✅ 테스트 데이터 7개 생성 완료!");
   }
 
+  Future<void> seedTestDummy() async {
+    final random = Random();
+    final now = DateTime.now().subtract(const Duration(minutes: 30));
+
+    final date = now.subtract(const Duration(days: 1));
+
+    // 2. 수면 점수: 50 ~ 100점 사이
+    final double score = 50.0 + random.nextInt(51); // 50 ~ 100
+
+    // 3. 전체 수면 시간: 4시간(240분) ~ 9시간(540분) 사이 랜덤
+    final int totalMinutes = 240 + random.nextInt(301);
+
+    // 4. 수면 단계별 시간 계산 (비율로 쪼개기)
+    // - 깊은 잠: 전체의 15% ~ 25%
+    // - REM 수면: 전체의 20% ~ 25%
+    // - 깬 시간: 전체의 2% ~ 5%
+    // - 얕은 잠: 나머지 전체
+
+    final double deepRatio = 0.15 + (random.nextInt(11) / 100); // 0.15~0.25
+    final double remRatio = 0.20 + (random.nextInt(6) / 100); // 0.20~0.25
+    final double awakeRatio = 0.02 + (random.nextInt(4) / 100); // 0.02~0.05
+
+    final int deepMinutes = (totalMinutes * deepRatio).toInt();
+    final int remMinutes = (totalMinutes * remRatio).toInt();
+    final int awakeMinutes = (totalMinutes * awakeRatio).toInt();
+
+    // *중요* 얕은 잠은 나머지 시간으로 채워서 총합을 맞춤
+    final int lightMinutes =
+        totalMinutes - (deepMinutes + remMinutes + awakeMinutes);
+
+    final report = SleepReport(
+      date: date,
+      sleepScore: score,
+      durationInMinutes: totalMinutes,
+      deepSleepMinutes: deepMinutes,
+      remSleepMinutes: remMinutes,
+      lightSleepMinutes: lightMinutes,
+      awakeSleepMinutes: awakeMinutes,
+      isSent: false, // 모델에 isSent 필드가 있다면 주석 해제
+    );
+
+    HealthDataService.inst.writeSleepDataToHealthConnect(report);
+
+    print("✅ 테스트 데이터 작성 완료!");
+  }
+
   /// [테스트용] 데이터 전체 삭제 (초기화)
   Future<void> clearAllData() async {
     await _isar.writeTxn(() async {
       await _isar.sleepReports.clear();
     });
     print("🗑️ 모든 데이터 삭제 완료");
+  }
+
+  Future<bool> deleteDummy() async {
+    final now = DateTime.now();
+    final deleteStartDate = now.subtract(Duration(days: 1)); // 어제부터
+    final deleteEndDate = now.add(Duration(days: 2)); // 모레까지
+
+    return await HealthDataService.inst.deleteSleepDataFromHealthConnect(
+      deleteStartDate,
+      deleteEndDate,
+    );
   }
 }

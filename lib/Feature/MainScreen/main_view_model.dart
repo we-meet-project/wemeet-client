@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:wemeet_client/Core/Core/workerRegister.dart';
-import 'package:wemeet_client/Core/Manager/workermanager.dart';
-import 'package:wemeet_client/Core/Service/localprofile_service.dart';
-import 'package:wemeet_client/Core/Service/repository_service.dart';
-import 'package:wemeet_client/Model/Sleep_report_model.dart';
+import 'package:goodsleeper/Core/Core/workerRegister.dart';
+import 'package:goodsleeper/Core/Manager/workermanager.dart';
+import 'package:goodsleeper/Core/Service/localprofile_service.dart';
+import 'package:goodsleeper/Core/Service/repository_service.dart';
+import 'package:goodsleeper/Model/Sleep_report_model.dart';
 
 class MainViewModel with ChangeNotifier {
   final RepositoryService _repository = RepositoryService.inst;
@@ -49,9 +49,10 @@ class MainViewModel with ChangeNotifier {
     try {
       // HealthWorker 수동 실행 (isPeriodic: false)
       // targetDate 등을 지정해서 보낼 수도 있지만, 기본 로직(어제~오늘)을 따름
-      await _workerManager.executeTask("generateSleepReport", {
+      await _workerManager.executeTask(WorkerName.sleepReport, {
         'isPeriodic': false,
-        // 'startTime': ... (필요 시 지정)
+        'startTime': DateTime.now().subtract(const Duration(days: 1)),
+        'endTime': DateTime.now(),
       });
 
       // 생성이 완료되면 DB 다시 읽기
@@ -75,7 +76,8 @@ class MainViewModel with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    await _repository.seedTestData(); // 가짜 데이터 생성
+    //await _repository.seedTestData(); // 가짜 데이터 생성
+    await _repository.seedTestDummy();
     await loadData(); // UI 새로고침 (생성된 데이터 불러오기)
   }
 
@@ -84,8 +86,10 @@ class MainViewModel with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    await _repository.clearAllData();
-    await loadData(); // 빈 화면으로 갱신
+    // await _repository.clearAllData();
+    // await loadData(); // 빈 화면으로 갱신
+
+    await _repository.deleteDummy();
   }
 
   Future<void> syncToServer() async {
